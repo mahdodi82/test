@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة منصة نِحرير</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --gold: #c5a059; --dark: #1a1c23; --card: #24262d; }
+        body { font-family: sans-serif; background: var(--dark); color: white; margin: 0; padding: 20px; }
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; max-width: 1200px; margin: auto; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        h2 { color: var(--gold); border-bottom: 1px solid #3f414a; padding-bottom: 10px; margin-top: 0; font-size: 1.2rem; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; background: #2d2f36; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--gold); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: #b08e4d; }
+        .expert-preview { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 2px solid var(--gold); }
+    </style>
+</head>
+<body>
+
+<div style="text-align:center; margin-bottom: 30px;">
+    <h1><i class="fas fa-user-shield"></i> لوحة التحكم المركزية</h1>
+    <a href="index.html" style="color: var(--gold); text-decoration: none;">← العودة للموقع الرئيسي</a>
+</div>
+
+<div class="admin-grid">
+    
+    <!-- 1. إضافة المحاضرات والكتب -->
+    <div class="card">
+        <h2><i class="fas fa-file-medical"></i> إضافة مادة علمية</h2>
+        <input type="text" id="resTitle" placeholder="عنوان المادة (مثال: محاضرة تشريح العظام)">
+        <input type="text" id="resLink" placeholder="رابط الملف (Google Drive/YouTube)">
+        
+        <label>اختر القسم بدقة:</label>
+        <select id="resCat">
+            <optgroup label="المحاضرات الطبية">
+                <option value="الطب و الجراحة">الطب و الجراحة</option>
+                <option value="طب الأطفال">طب الأطفال</option>
+                <option value="طب التخدير">طب التخدير</option>
+                <option value="طب النساء و التوليد">طب النساء و التوليد</option>
+                <option value="طب المختبرات والتحاليل">طب المختبرات والتحاليل</option>
+                <option value="طب الأمراض الباطنية">طب الأمراض الباطنية</option>
+                <option value="طب و جراحة العظام">طب و جراحة العظام</option>
+                <option value="طب الأعصاب والعمود الفقري">طب الأعصاب والعمود الفقري</option>
+            </optgroup>
+            <optgroup label="أقسام أخرى">
+                <option value="books">الكتب العلمية</option>
+                <option value="research">الأبحاث والدراسات</option>
+            </optgroup>
+        </select>
+        <button onclick="uploadResource()">نشر المادة</button>
+    </div>
+
+    <!-- 2. إضافة خبير جديد -->
+    <div class="card">
+        <h2><i class="fas fa-user-md"></i> إضافة خبير جديد</h2>
+        <div style="text-align: center;">
+            <img id="expertImgPreview" src="https://via.placeholder.com/60" class="expert-preview">
+            <input type="file" id="expertFile" accept="image/*" onchange="previewExpertPhoto(event)">
+        </div>
+        <input type="text" id="expName" placeholder="اسم الخبير (د. فلان بن فلان)">
+        <input type="text" id="expSpec" placeholder="التخصص (مثال: جراحة أعصاب)">
+        <input type="text" id="expDept" placeholder="القسم/الجامعة">
+        <input type="email" id="expEmail" placeholder="الإيميل المهني">
+        <input type="tel" id="expPhone" placeholder="رقم الهاتف (اختياري)">
+        <button onclick="uploadExpert()" style="background: #10b981;">حفظ بيانات الخبير</button>
+    </div>
+
+    <!-- 3. تفعيل حسابات الباحثين -->
+    <div class="card">
+        <h2><i class="fas fa-user-check"></i> طلبات التسجيل المعلقة</h2>
+        <div id="pendingUsers">جاري التحميل...</div>
+    </div>
+
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAOiRs8QWVxo0FMmFJrv_KTNDNvxrp8TzE",
+        authDomain: "nihrir-7527c.firebaseapp.com",
+        projectId: "nihrir-7527c",
+        storageBucket: "nihrir-7527c.firebasestorage.app",
+        messagingSenderId: "912985166127",
+        appId: "1:912985166127:web:b841722bdcad5d4ef6d1da"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- وظائف الموارد العلمية ---
+    async function uploadResource() {
+        const title = document.getElementById('resTitle').value;
+        const link = document.getElementById('resLink').value;
+        const cat = document.getElementById('resCat').value;
+
+        if(!title || !link) return alert("يرجى ملء كافة الخانات");
+
+        await db.collection('nihrir_data').add({
+            title, link, category: cat, timestamp: new Date()
+        });
+        alert("تمت إضافة المادة بنجاح!");
+        location.reload();
+    }
+
+    // --- وظائف الخبراء ---
+    let expertPhotoBase64 = "";
+
+    function previewExpertPhoto(e) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            document.getElementById('expertImgPreview').src = reader.result;
+            expertPhotoBase64 = reader.result;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    }
+
+    async function uploadExpert() {
+        const name = document.getElementById('expName').value;
+        const spec = document.getElementById('expSpec').value;
+        const email = document.getElementById('expEmail').value;
+
+        if(!name || !email) return alert("الاسم والإيميل ضروريان");
+
+        await db.collection('experts').add({
+            name, spec, 
+            dept: document.getElementById('expDept').value,
+            email, 
+            phone: document.getElementById('expPhone').value,
+            photo: expertPhotoBase64 || "https://via.placeholder.com/80"
+        });
+        alert("تمت إضافة الخبير للمنصة!");
+        location.reload();
+    }
+
+    // --- إدارة المستخدمين ---
+    db.collection('users').where('status', '==', 'pending').onSnapshot(snap => {
+        let h = '';
+        snap.forEach(doc => {
+            const u = doc.data();
+            h += `<div style="background:#2d2f36; padding:10px; border-radius:5px; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;">
+                <small>${u.name}</small>
+                <button onclick="approve('${doc.id}')" style="width:auto; padding:5px 10px; font-size:0.7rem; margin:0;">تفعيل</button>
+            </div>`;
+        });
+        document.getElementById('pendingUsers').innerHTML = h || 'لا توجد طلبات جديدة.';
+    });
+
+    async function approve(id) {
+        await db.collection('users').doc(id).update({ status: 'active' });
+        alert("تم تفعيل الحساب");
+    }
+</script>
+</body>
+</html>

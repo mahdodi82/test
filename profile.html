@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>الملف الشخصي | نِحرير</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: white; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 350px; }
+        .img-container { position: relative; width: 120px; height: 120px; margin: 0 auto 20px; }
+        #avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #c5a059; }
+        .upload-icon { position: absolute; bottom: 5px; right: 5px; background: #0c2340; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+        input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        .btn-save { background: #0c2340; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="box">
+    <div class="img-container">
+        <img id="avatar" src="https://via.placeholder.com/120">
+        <label for="fileIn" class="upload-icon">📷</label>
+        <input type="file" id="fileIn" hidden accept="image/*" onchange="preview(event)">
+    </div>
+    <h2>إعدادات الحساب</h2>
+    <input type="text" id="uName" placeholder="الاسم الكامل">
+    <button class="btn-save" onclick="update()">حفظ التغييرات</button>
+    <p><a href="index.html" style="color: #666; text-decoration: none;">← العودة للرئيسية</a></p>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAOiRs8QWVxo0FMmFJrv_KTNDNvxrp8TzE",
+        authDomain: "nihrir-7527c.firebaseapp.com",
+        projectId: "nihrir-7527c",
+        storageBucket: "nihrir-7527c.firebasestorage.app",
+        messagingSenderId: "912985166127",
+        appId: "1:912985166127:web:b841722bdcad5d4ef6d1da"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    let base64 = "";
+
+    auth.onAuthStateChanged(user => {
+        if(user) {
+            db.collection('users').doc(user.uid).get().then(doc => {
+                const d = doc.data();
+                document.getElementById('uName').value = d.name;
+                if(d.photoURL) document.getElementById('avatar').src = d.photoURL;
+                base64 = d.photoURL || "";
+            });
+        }
+    });
+
+    function preview(e) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            document.getElementById('avatar').src = reader.result;
+            base64 = reader.result;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    }
+
+    async function update() {
+        const user = auth.currentUser;
+        await db.collection('users').doc(user.uid).update({
+            name: document.getElementById('uName').value,
+            photoURL: base64
+        });
+        alert("تم تحديث بياناتك دكتور!");
+        window.location.href = "index.html";
+    }
+</script>
+</body>
+</html>
