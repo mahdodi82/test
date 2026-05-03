@@ -2,57 +2,74 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>التحكم الكامل - منصة نِحرير</title>
+    <title>إدارة منصة نِحرير - تحكم كامل</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --gold: #c5a059; --bg: #12141a; --card: #1e2128; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
-        .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom:20px; }
-        h2 { color: var(--gold); border-bottom: 1px solid #444; padding-bottom: 10px; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #0f1115; border: 1px solid #444; color: white; border-radius: 8px; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-add { background: var(--gold); color: #000; }
-        .btn-user { background: #3b82f6; color: white; margin-top:5px; }
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333; }
+        :root { --gold: #c5a059; --bg: #0f1115; --card: #1e2128; --danger: #ef4444; --success: #10b981; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; }
+        .admin-container { max-width: 1200px; margin: auto; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; }
+        h2 { color: var(--gold); border-bottom: 2px solid var(--gold); padding-bottom: 10px; display: flex; justify-content: space-between; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #0b0d11; border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; }
+        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-gold { background: var(--gold); color: black; width: 100%; }
+        .btn-edit { background: #3b82f6; color: white; margin-left: 5px; }
+        .btn-delete { background: var(--danger); color: white; }
+        
+        /* تنسيق جداول البيانات */
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .data-table th, .data-table td { padding: 12px; border-bottom: 1px solid #333; text-align: right; font-size: 0.9rem; }
+        .data-table th { color: var(--gold); }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; }
+        .status-active { background: var(--success); }
+        .status-pending { background: #f59e0b; }
     </style>
 </head>
 <body>
 
-<h1 style="text-align:center; color:var(--gold);">لوحة تحكم نِحرير الشاملة</h1>
+<div class="admin-container">
+    <h1 style="text-align:center; color:var(--gold);">لوحة التحكم الشاملة - نِحرير</h1>
 
-<div class="grid">
-    <!-- إدارة الأقسام والملفات -->
-    <div class="card">
-        <h2><i class="fas fa-sitemap"></i> إضافة (قسم أو ملف)</h2>
-        <select id="dataType">
-            <option value="category">إنشاء قسم جديد (مجلد)</option>
-            <option value="file">إضافة مادة علمية (رابط/ملف)</option>
-        </select>
-        
-        <input type="text" id="itemName" placeholder="الاسم (مثلاً: طب العظام أو محاضرة الكسور)">
-        <input type="text" id="itemParent" placeholder="الأب (اكتب اسم القسم الذي يتبعه، أو اتركه فارغاً للرئيسي)">
-        <input type="text" id="itemPayload" placeholder="رابط الصورة (للقسم) أو رابط الملف (للمحاضرة)">
-        
-        <button class="btn-add" onclick="saveItem()">حفظ البيانات</button>
+    <div class="grid">
+        <!-- 1. إضافة وتعديل المحتوى -->
+        <div class="card">
+            <h2 id="formTitle">إضافة قسم أو مادة</h2>
+            <input type="hidden" id="editId">
+            <select id="dataType">
+                <option value="category">قسم (مجلد)</option>
+                <option value="file">مادة علمية (رابط)</option>
+            </select>
+            <input type="text" id="itemName" placeholder="الاسم">
+            <input type="text" id="itemParent" placeholder="الأب (مثلاً: طب العظام أو root)">
+            <input type="text" id="itemPayload" placeholder="رابط الصورة أو رابط الملف">
+            <button class="btn-gold" id="saveBtn" onclick="saveData()">حفظ البيانات</button>
+            <button class="btn-delete" id="cancelBtn" style="display:none; margin-top:10px; width:100%" onclick="resetForm()">إلغاء التعديل</button>
+        </div>
+
+        <!-- 2. إدارة الباحثين المسجلين -->
+        <div class="card">
+            <h2>إدارة الباحثين</h2>
+            <div style="max-height: 300px; overflow-y: auto;">
+                <table class="data-table">
+                    <thead><tr><th>الاسم</th><th>الحالة</th><th>إجراء</th></tr></thead>
+                    <tbody id="usersList"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <!-- إدارة الخبراء -->
+    <!-- 3. عرض وإدارة الأقسام والمواد المضافة -->
     <div class="card">
-        <h2><i class="fas fa-user-md"></i> إضافة خبير</h2>
-        <input type="text" id="expName" placeholder="اسم الخبير">
-        <input type="text" id="expSpec" placeholder="التخصص">
-        <input type="text" id="expImg" placeholder="رابط صورة الخبير">
-        <input type="text" id="expEmail" placeholder="الإيميل">
-        <button style="background:#10b981; color:white" onclick="saveExpert()">حفظ الخبير</button>
-    </div>
-
-    <!-- تفعيل المستخدمين الجدد -->
-    <div class="card">
-        <h2><i class="fas fa-users-cog"></i> طلبات التسجيل (Pending)</h2>
-        <div id="pendingUsers">جاري التحميل...</div>
+        <h2>إدارة المحتوى الحالي (تعديل وحذف)</h2>
+        <div style="max-height: 500px; overflow-y: auto;">
+            <table class="data-table">
+                <thead><tr><th>النوع</th><th>الاسم</th><th>الأب</th><th>الرابط</th><th>التحكم</th></tr></thead>
+                <tbody id="contentList"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -68,50 +85,91 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // حفظ قسم أو ملف
-    async function saveItem() {
-        const type = document.getElementById('dataType').value;
-        const name = document.getElementById('itemName').value;
-        const parent = document.getElementById('itemParent').value || "root";
-        const payload = document.getElementById('itemPayload').value;
-
-        if(!name) return alert("الاسم مطلوب");
-
-        await db.collection('nihrir_data').add({
-            type, name, parent, payload,
-            createdAt: new Date()
-        });
-        alert("تم الحفظ بنجاح");
-        location.reload();
-    }
-
-    // حفظ خبير
-    async function saveExpert() {
-        await db.collection('experts').add({
-            name: document.getElementById('expName').value,
-            spec: document.getElementById('expSpec').value,
-            image: document.getElementById('expImg').value,
-            email: document.getElementById('expEmail').value
-        });
-        alert("تم حفظ الخبير");
-    }
-
-    // إدارة المستخدمين
-    db.collection('users').where('status', '==', 'pending').onSnapshot(snap => {
+    // جلب الباحثين (المسجلين سابقاً وحالياً)
+    db.collection('users').onSnapshot(snap => {
         let h = '';
         snap.forEach(doc => {
             const u = doc.data();
-            h += `<div class="user-row">
-                <span>${u.name}</span>
-                <button class="btn-user" onclick="activateUser('${doc.id}')">تفعيل</button>
-            </div>`;
+            h += `<tr>
+                <td>${u.name}</td>
+                <td><span class="status-badge ${u.status === 'active' ? 'status-active' : 'status-pending'}">${u.status}</span></td>
+                <td>
+                    <button class="btn-edit" style="padding:5px" onclick="toggleUser('${doc.id}', '${u.status}')">تغيير الحالة</button>
+                </td>
+            </tr>`;
         });
-        document.getElementById('pendingUsers').innerHTML = h || 'لا توجد طلبات معلقة';
+        document.getElementById('usersList').innerHTML = h;
     });
 
-    async function activateUser(id) {
-        await db.collection('users').doc(id).update({ status: 'active' });
-        alert("تم تفعيل المستخدم");
+    async function toggleUser(id, currentStatus) {
+        const next = currentStatus === 'active' ? 'pending' : 'active';
+        await db.collection('users').doc(id).update({ status: next });
+    }
+
+    // جلب المحتوى للإدارة
+    db.collection('nihrir_data').onSnapshot(snap => {
+        let h = '';
+        snap.forEach(doc => {
+            const d = doc.data();
+            h += `<tr>
+                <td>${d.type === 'category' ? '📁' : '📄'}</td>
+                <td>${d.name}</td>
+                <td>${d.parent}</td>
+                <td><small>${d.payload.substring(0, 20)}...</small></td>
+                <td>
+                    <button class="btn-edit" onclick="editItem('${doc.id}', '${d.type}', '${d.name}', '${d.parent}', '${d.payload}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn-delete" onclick="deleteItem('${doc.id}')"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+        });
+        document.getElementById('contentList').innerHTML = h;
+    });
+
+    // وظيفة الحفظ أو التعديل
+    async function saveData() {
+        const id = document.getElementById('editId').value;
+        const data = {
+            type: document.getElementById('dataType').value,
+            name: document.getElementById('itemName').value,
+            parent: document.getElementById('itemParent').value || "root",
+            payload: document.getElementById('itemPayload').value
+        };
+
+        if(id) {
+            await db.collection('nihrir_data').doc(id).update(data);
+            alert("تم التعديل بنجاح");
+        } else {
+            await db.collection('nihrir_data').add(data);
+            alert("تمت الإضافة");
+        }
+        resetForm();
+    }
+
+    function editItem(id, type, name, parent, payload) {
+        document.getElementById('editId').value = id;
+        document.getElementById('dataType').value = type;
+        document.getElementById('itemName').value = name;
+        document.getElementById('itemParent').value = parent;
+        document.getElementById('itemPayload').value = payload;
+        document.getElementById('formTitle').innerText = "تعديل المادة: " + name;
+        document.getElementById('saveBtn').innerText = "تحديث التغييرات";
+        document.getElementById('cancelBtn').style.display = "block";
+    }
+
+    async function deleteItem(id) {
+        if(confirm("هل أنت متأكد من الحذف نهائياً؟")) {
+            await db.collection('nihrir_data').doc(id).delete();
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('editId').value = "";
+        document.getElementById('itemName').value = "";
+        document.getElementById('itemParent').value = "";
+        document.getElementById('itemPayload').value = "";
+        document.getElementById('formTitle').innerText = "إضافة قسم أو مادة";
+        document.getElementById('saveBtn').innerText = "حفظ البيانات";
+        document.getElementById('cancelBtn').style.display = "none";
     }
 </script>
 </body>
