@@ -2,90 +2,57 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نِحرير | الإدارة المركزية</title>
+    <title>إدارة منصة نِحرير العلمية</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --gold: #c5a059; --dark: #0c2340; --bg: #0f1115; --card: #1e2128; }
-        body { font-family: 'Segoe UI', Tahoma; background: var(--bg); color: white; margin: 0; display: flex; }
-        .sidebar { width: 260px; background: var(--card); border-left: 1px solid #333; height: 100vh; position: fixed; padding: 20px; }
-        .main { margin-right: 260px; padding: 40px; width: 100%; }
-        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #333; margin-bottom: 30px; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #0b0d11; border: 1px solid #444; color: white; border-radius: 8px; }
-        button { cursor: pointer; border: none; font-weight: bold; border-radius: 8px; transition: 0.3s; }
-        .btn-gold { background: var(--gold); color: black; width: 100%; padding: 15px; font-size: 1.1rem; }
-        table { width: 100%; margin-top: 20px; border-collapse: collapse; background: #161b22; }
-        th, td { padding: 15px; text-align: right; border-bottom: 1px solid #333; }
-        th { color: var(--gold); }
-        .nav-item { padding: 15px; color: #ccc; cursor: pointer; display: block; text-decoration: none; border-radius: 8px; margin-bottom: 5px; }
-        .nav-item:hover, .nav-item.active { background: var(--gold); color: black; }
+        :root { --primary: #1a237e; --accent: #c5a059; --dark-bg: #0f172a; --card-bg: #1e293b; }
+        body { font-family: 'Segoe UI', Tahoma; background: var(--dark-bg); color: #e2e8f0; margin: 0; display: flex; }
+        .sidebar { width: 280px; background: var(--card-bg); height: 100vh; position: fixed; border-left: 1px solid #334155; padding: 30px 15px; }
+        .main-content { margin-right: 280px; width: calc(100% - 280px); padding: 40px; }
+        .admin-card { background: var(--card-bg); border-radius: 12px; padding: 25px; border: 1px solid #334155; margin-bottom: 25px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 6px; box-sizing: border-box; }
+        .btn-save { background: var(--accent); color: #1a237e; width: 100%; padding: 15px; border: none; font-weight: bold; cursor: pointer; border-radius: 6px; font-size: 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { color: var(--accent); text-align: right; border-bottom: 2px solid #334155; padding: 12px; }
+        td { padding: 12px; border-bottom: 1px solid #334155; font-size: 0.9rem; }
+        .tag { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; background: #334155; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--gold); text-align:center;">نِحرير ADMIN</h2>
-    <div class="nav-item active" onclick="showTab('tab-lib')">إدارة المحتوى العلمي</div>
-    <div class="nav-item" onclick="showTab('tab-exp')">إدارة الخبراء</div>
-    <div class="nav-item" onclick="showTab('tab-users')">إدارة الباحثين</div>
+    <h2 style="color:var(--accent); text-align:center; letter-spacing: 2px;">نِحرير ADMIN</h2>
+    <hr style="border: 0.5px solid #334155; margin: 20px 0;">
+    <nav>
+        <div style="color:var(--accent); padding: 10px; font-weight: bold;">التحكم بالبيانات</div>
+        <a href="#" class="btn-save" style="display:block; text-align:center; text-decoration:none; margin-top:10px;">إضافة محتوى جديد</a>
+    </nav>
 </div>
 
-<div class="main">
-    <!-- تبويب المكتبة -->
-    <div id="tab-lib" class="tab-content">
-        <div class="card">
-            <h2 id="lib-title" style="color:var(--gold)">إضافة/تعديل مادة علمية</h2>
-            <input type="hidden" id="lib-id">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                <select id="lib-type">
-                    <option value="category">قسم (مجلد)</option>
-                    <option value="book">كتاب علمي</option>
-                    <option value="research">بحث أو مقال</option>
-                </select>
-                <input type="text" id="lib-name" placeholder="اسم المادة أو القسم">
-                <input type="text" id="lib-parent" placeholder="الأب (اكتب root للرئيسية أو اسم القسم الأب)">
-                <input type="text" id="lib-payload" placeholder="رابط الملف أو رابط الصورة">
-            </div>
-            <button class="btn-gold" onclick="saveToLib()">حفظ المادة العلمية</button>
+<div class="main-content">
+    <div class="admin-card">
+        <h3 style="margin-top:0;">إضافة مادة علمية جديدة</h3>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+            <select id="type">
+                <option value="category">إنشاء قسم (مجلد)</option>
+                <option value="book">كتاب علمي</option>
+                <option value="research">بحث / مقالة علمية</option>
+            </select>
+            <input type="text" id="name" placeholder="العنوان التجاري أو العلمي">
+            <input type="text" id="parent" placeholder="القسم الأب (اكتب root للرئيسية)">
+            <input type="text" id="payload" placeholder="رابط الملف (PDF) أو الرابط الخارجي">
         </div>
-
-        <div class="card">
-            <h3>المحتوى الحالي في قاعدة البيانات</h3>
-            <table id="lib-table">
-                <thead><tr><th>النوع</th><th>الاسم</th><th>الأب</th><th>التحكم</th></tr></thead>
-                <tbody id="lib-body"></tbody>
-            </table>
-        </div>
+        <button class="btn-save" onclick="saveData()">اعتماد ونشر المادة</button>
     </div>
 
-    <!-- تبويب الخبراء -->
-    <div id="tab-exp" class="tab-content" style="display:none">
-        <div class="card">
-            <h2 style="color:var(--gold)">إضافة خبير جديد</h2>
-            <input type="text" id="exp-name" placeholder="الاسم الكامل">
-            <input type="text" id="exp-spec" placeholder="التخصص الدقيق">
-            <input type="text" id="exp-img" placeholder="رابط الصورة الشخصية">
-            <input type="text" id="exp-email" placeholder="البريد الإلكتروني">
-            <button class="btn-gold" onclick="saveExpert()">حفظ بيانات الخبير</button>
-        </div>
-        <div class="card">
-            <table id="exp-table">
-                <thead><tr><th>الاسم</th><th>التخصص</th><th>التحكم</th></tr></thead>
-                <tbody id="exp-body"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- تبويب الباحثين -->
-    <div id="tab-users" class="tab-content" style="display:none">
-        <div class="card">
-            <h3>طلبات الانضمام والباحثين</h3>
-            <table>
-                <thead><tr><th>الاسم</th><th>الحالة</th><th>الإجراء</th></tr></thead>
-                <tbody id="users-body"></tbody>
-            </table>
-        </div>
+    <div class="admin-card">
+        <h3>المحتوى المنشور حالياً</h3>
+        <table>
+            <thead><tr><th>النوع</th><th>العنوان</th><th>القسم</th><th>الإجراء</th></tr></thead>
+            <tbody id="dataTable"></tbody>
+        </table>
     </div>
 </div>
 
@@ -101,66 +68,33 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    function showTab(id) {
-        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-        document.getElementById(id).style.display = 'block';
-    }
-
-    // إدارة المكتبة
-    async function saveToLib() {
-        const id = document.getElementById('lib-id').value;
+    async function saveData() {
         const data = {
-            type: document.getElementById('lib-type').value,
-            name: document.getElementById('lib-name').value,
-            parent: document.getElementById('lib-parent').value || "root",
-            payload: document.getElementById('lib-payload').value
+            type: document.getElementById('type').value,
+            name: document.getElementById('name').value,
+            parent: document.getElementById('parent').value || "root",
+            payload: document.getElementById('payload').value,
+            date: new Date().toISOString()
         };
-        if(id) await db.collection('nihrir_data').doc(id).update(data);
-        else await db.collection('nihrir_data').add(data);
-        alert("تم الحفظ"); location.reload();
+        await db.collection('nihrir_data').add(data);
+        alert("تم النشر بنجاح"); location.reload();
     }
 
-    db.collection('nihrir_data').onSnapshot(snap => {
-        let h = '';
+    db.collection('nihrir_data').orderBy('date', 'desc').onSnapshot(snap => {
+        let html = '';
         snap.forEach(doc => {
             const d = doc.data();
-            h += `<tr><td>${d.type}</td><td>${d.name}</td><td>${d.parent}</td>
-            <td><button onclick="deleteDoc('nihrir_data','${doc.id}')" style="background:red; color:white">حذف</button></td></tr>`;
+            html += `<tr>
+                <td><span class="tag">${d.type}</span></td>
+                <td>${d.name}</td>
+                <td>${d.parent}</td>
+                <td><button onclick="deleteDoc('${doc.id}')" style="background:none; border:none; color:#ff4444; cursor:pointer;"><i class="fas fa-trash"></i></button></td>
+            </tr>`;
         });
-        document.getElementById('lib-body').innerHTML = h;
+        document.getElementById('dataTable').innerHTML = html;
     });
 
-    // وظائف الخبراء والمستخدمين (موجودة برمجياً)
-    async function saveExpert() {
-        await db.collection('experts').add({
-            name: document.getElementById('exp-name').value,
-            spec: document.getElementById('exp-spec').value,
-            image: document.getElementById('exp-img').value,
-            email: document.getElementById('exp-email').value
-        });
-        alert("تمت إضافة الخبير"); location.reload();
-    }
-
-    db.collection('experts').onSnapshot(snap => {
-        let h = '';
-        snap.forEach(doc => {
-            const e = doc.data();
-            h += `<tr><td>${e.name}</td><td>${e.spec}</td><td><button onclick="deleteDoc('experts','${doc.id}')">حذف</button></td></tr>`;
-        });
-        document.getElementById('exp-body').innerHTML = h;
-    });
-
-    db.collection('users').onSnapshot(snap => {
-        let h = '';
-        snap.forEach(doc => {
-            const u = doc.data();
-            h += `<tr><td>${u.name}</td><td>${u.status}</td><td><button onclick="toggleUser('${doc.id}','${u.status}')">تفعيل/تعطيل</button></td></tr>`;
-        });
-        document.getElementById('users-body').innerHTML = h;
-    });
-
-    async function toggleUser(id, s) { await db.collection('users').doc(id).update({status: s === 'active' ? 'pending' : 'active'}); }
-    async function deleteDoc(c, id) { if(confirm("حذف؟")) await db.collection(c).doc(id).delete(); }
+    async function deleteDoc(id) { if(confirm("حذف؟")) await db.collection('nihrir_data').doc(id).delete(); }
 </script>
 </body>
 </html>
