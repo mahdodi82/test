@@ -11,25 +11,23 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; }
         .header { background: var(--navy); padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
         .logo { font-size: 1.8rem; color: var(--gold); font-weight: bold; text-decoration: none; }
-        .nav-menu { display: flex; list-style: none; gap: 25px; color: white; cursor: pointer; }
-        .nav-menu li:hover, .nav-menu li.active { color: var(--gold); }
+        .nav-menu { display: flex; list-style: none; gap: 20px; color: white; cursor: pointer; }
         .container { max-width: 1200px; margin: 40px auto; padding: 20px; }
         
-        /* إطار البحث */
-        #search-wrapper { display: none; margin-bottom: 30px; animation: fadeIn 0.3s; }
-        .search-box { width: 100%; padding: 15px; border-radius: 10px; border: 2px solid var(--gold); font-size: 1.1rem; outline: none; }
+        /* تصميم المجلدات */
+        .folder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 50px; }
+        .main-folder { background: white; padding: 50px; border-radius: 20px; text-align: center; border-bottom: 8px solid var(--gold); cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .main-folder:hover { transform: translateY(-10px); background: #fdfdfd; }
+        .main-folder i { font-size: 5rem; color: var(--navy); margin-bottom: 20px; }
+        .main-folder h2 { color: var(--navy); font-size: 2rem; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-        .card { background: white; padding: 30px 15px; border-radius: 15px; text-align: center; border-top: 5px solid var(--gold); box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); }
+        .spec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .spec-card { background: white; padding: 20px; border-radius: 12px; text-align: center; border-right: 4px solid var(--gold); cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         
-        .item-row { background: white; padding: 20px; border-radius: 10px; margin-bottom: 10px; border-right: 5px solid var(--gold); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .btn-action { background: var(--navy); color: var(--gold); padding: 8px 15px; border-radius: 5px; text-decoration: none; font-weight: bold; }
-        
-        .expert-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .expert-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        #search-wrapper { display: none; margin-bottom: 20px; }
+        .search-box { width: 100%; padding: 15px; border-radius: 10px; border: 2px solid var(--gold); font-size: 1.1rem; }
+        .item-row { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-right: 4px solid var(--navy); }
+        .btn-back { background: var(--navy); color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -37,34 +35,34 @@
 <header class="header">
     <a href="#" class="logo" onclick="location.reload()">نِحرير</a>
     <ul class="nav-menu">
-        <li onclick="location.reload()" class="active">الأقسام</li>
-        <li onclick="loadModule('book')">الكتب العلمية</li>
-        <li onclick="loadModule('research')">الأبحاث والدراسات</li>
-        <li onclick="loadExperts()">نخبة الخبراء</li>
+        <li onclick="location.reload()">الرئيسية</li>
+        <li onclick="loadModule('book')">الكتب</li>
+        <li onclick="loadModule('research')">الأبحاث</li>
         <li onclick="loadAbout()">عن المنصة</li>
     </ul>
 </header>
 
 <div class="container">
-    <!-- إطار البحث يظهر فقط في الكتب والأبحاث -->
-    <div id="search-wrapper">
-        <input type="text" id="search-input" class="search-box" placeholder="ابحث عن عنوان أو تخصص..." onkeyup="doSearch()">
-    </div>
-
+    <div id="search-wrapper"><input type="text" id="search-input" class="search-box" placeholder="ابحث هنا..." onkeyup="doSearch()"></div>
     <div id="main-view">
-        <!-- الواجهة الرئيسية للأقسام -->
-        <h2 style="color:var(--navy)">الأقسام الرئيسية</h2>
-        <div class="grid">
-            <div class="card" onclick="loadByParent('التأهيل الحركي')"><i class="fas fa-running fa-3x"></i><h3>التأهيل الحركي</h3></div>
-            <div class="card" onclick="loadByParent('العلاج الطبيعي')"><i class="fas fa-hands-helping fa-3x"></i><h3>العلاج الطبيعي</h3></div>
-            <div class="card" onclick="loadByParent('الطب الرياضي')"><i class="fas fa-dumbbell fa-3x"></i><h3>الطب الرياضي</h3></div>
-            <div class="card" onclick="loadByParent('طب العظام')"><i class="fas fa-bone fa-3x"></i><h3>طب العظام</h3></div>
-            <div class="card" onclick="loadByParent('الطب البديل')"><i class="fas fa-leaf fa-3x"></i><h3>الطب البديل</h3></div>
+        <!-- المجلدات الرئيسية -->
+        <div class="folder-grid">
+            <div class="main-folder" onclick="openFolder('medical_folder', 'الاختصاصات الطبية')">
+                <i class="fas fa-folder-open"></i>
+                <h2>الاختصاصات الطبية</h2>
+                <p>تشمل العظام، القلب، الجراحة، والأشعة وغيرها</p>
+            </div>
+            <div class="main-folder" onclick="openFolder('para_folder', 'الاختصاصات شبه الطبية')">
+                <i class="fas fa-folder-open" style="color: #2ecc71;"></i>
+                <h2>الاختصاصات شبه الطبية</h2>
+                <p>تشمل التأهيل، العلاج الطبيعي، التمريض، والتغذية</p>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+    // تهيئة Firebase (نفس الإعدادات السابقة)
     const firebaseConfig = {
         apiKey: "AIzaSyAOiRs8QWVxo0FMmFJrv_KTNDNvxrp8TzE",
         authDomain: "nihrir-7527c.firebaseapp.com",
@@ -76,72 +74,53 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // تحميل الكتب أو الأبحاث مع تفعيل إطار البحث
-    async function loadModule(type) {
-        document.getElementById('search-wrapper').style.display = 'block';
+    // فتح مجلد (طبي أو شبه طبي) لعرض التخصصات التابعة له
+    function openFolder(folderKey, folderName) {
         const view = document.getElementById('main-view');
-        view.innerHTML = `<h2 style="color:var(--navy)">تصفح ${type === 'book' ? 'الكتب العلمية' : 'الأبحاث والدراسات'}</h2><div id="results-area"></div>`;
-        
-        const snap = await db.collection('nihrir_data').where('type', '==', type).get();
-        displayItems(snap);
-    }
+        let specs = [];
+        if(folderKey === 'medical_folder') {
+            specs = ["طب العظام", "طب القلب", "طب الأعصاب", "طب الأطفال", "الجراحة العامة", "الأشعة والتشخيص", "الطب الرياضي", "طب الطوارئ"];
+        } else {
+            specs = ["التأهيل الحركي", "العلاج الطبيعي", "التمريض", "التغذية العلاجية", "تقويم الأعضاء", "علاج النطق", "الطب البديل"];
+        }
 
-    // تحميل الخبراء (إخفاء البحث)
-    async function loadExperts() {
-        document.getElementById('search-wrapper').style.display = 'none';
-        const view = document.getElementById('main-view');
-        view.innerHTML = `<h2 style="color:var(--navy)">نخبة الخبراء والمتخصصين</h2><div class="grid" id="expert-grid"></div>`;
-        const snap = await db.collection('experts').get();
-        snap.forEach(doc => {
-            const e = doc.data();
-            document.getElementById('expert-grid').innerHTML += `
-                <div class="expert-card">
-                    <img src="${e.image}" class="expert-img">
-                    <h3>${e.name}</h3>
-                    <p style="color:var(--gold)">${e.spec}</p>
-                    <a href="mailto:${e.email}" class="btn-action">تواصل الآن</a>
-                </div>`;
+        view.innerHTML = `<button class="btn-back" onclick="location.reload()">← العودة للمجلدات</button> <h1>${folderName}</h1><div class="spec-grid" id="spec-list"></div>`;
+        
+        specs.forEach(s => {
+            document.getElementById('spec-list').innerHTML += `<div class="spec-card" onclick="loadBySpec('${s}')"><h3>${s}</h3></div>`;
         });
     }
 
-    // عن المنصة (إخفاء البحث)
-    function loadAbout() {
-        document.getElementById('search-wrapper').style.display = 'none';
-        document.getElementById('main-view').innerHTML = `
-            <div class="card" style="max-width:800px; margin:auto; text-align:right; padding:40px;">
-                <h2 style="color:var(--navy)">حول منصة نِحرير</h2>
-                <p>نِحرير هي بوابة علمية متخصصة في مجالات التأهيل الحركي والطب الرياضي، تهدف لتوفير أحدث المراجع والكتب للباحثين تحت إشراف متخصصين.</p>
-                <hr style="border:0.5px solid #eee; margin:20px 0;">
-                <p><strong>المشرف العام:</strong> أخصائي التأهيل الحركي مهدي</p>
-            </div>`;
-    }
-
-    async function loadByParent(p) {
+    // الدخول لكل اختصاص على حدة
+    async function loadBySpec(spec) {
         document.getElementById('search-wrapper').style.display = 'none';
         const view = document.getElementById('main-view');
-        view.innerHTML = `<h2>تخصص: ${p}</h2><div id="results-area"></div>`;
-        const snap = await db.collection('nihrir_data').where('parent', '==', p).get();
-        displayItems(snap);
+        view.innerHTML = `<button class="btn-back" onclick="location.reload()">← العودة للرئيسية</button> <h2>اختصاص: ${spec}</h2><div id="results"></div>`;
+        const snap = await db.collection('nihrir_data').where('parent', '==', spec).get();
+        render(snap);
     }
 
-    function displayItems(snap) {
-        const area = document.getElementById('results-area');
-        if(snap.empty) { area.innerHTML = "لا يوجد محتوى حالياً."; return; }
+    // محرك البحث (يظهر فقط في الكتب والأبحاث العامة)
+    async function loadModule(type) {
+        document.getElementById('search-wrapper').style.display = 'block';
+        const view = document.getElementById('main-view');
+        view.innerHTML = `<h2>تصفح ${type === 'book' ? 'الكتب' : 'الأبحاث'}</h2><div id="results"></div>`;
+        const snap = await db.collection('nihrir_data').where('type', '==', type).get();
+        render(snap);
+    }
+
+    function render(snap) {
+        const res = document.getElementById('results');
+        if(snap.empty) { res.innerHTML = "لا يوجد محتوى حالياً."; return; }
         snap.forEach(doc => {
             const d = doc.data();
-            area.innerHTML += `
-                <div class="item-row searchable">
-                    <div><strong>${d.name}</strong> <small>[${d.parent}]</small></div>
-                    <a href="${d.payload}" target="_blank" class="btn-action">فتح PDF</a>
-                </div>`;
+            res.innerHTML += `<div class="item-row searchable"><div><strong>${d.name}</strong></div><a href="${d.payload}" target="_blank" style="color:var(--gold)">فتح PDF</a></div>`;
         });
     }
 
     function doSearch() {
         const q = document.getElementById('search-input').value.toLowerCase();
-        document.querySelectorAll('.searchable').forEach(i => {
-            i.style.display = i.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
-        });
+        document.querySelectorAll('.searchable').forEach(i => i.style.display = i.innerText.toLowerCase().includes(q) ? 'flex' : 'none');
     }
 </script>
 </body>
