@@ -2,76 +2,58 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة تحكم نِحرير - النظام الهرمي</title>
+    <title>التحكم الكامل - منصة نِحرير</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --gold: #c5a059; --dark: #12141a; --card: #1e2128; --accent: #3b82f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--dark); color: white; margin: 0; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; max-width: 1400px; margin: auto; }
+        :root { --gold: #c5a059; --bg: #12141a; --card: #1e2128; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
         .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; }
-        h2 { color: var(--gold); font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; background: #0f1115; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .btn-gold { background: var(--gold); color: #12141a; }
-        .btn-blue { background: var(--accent); color: white; }
-        .preview-img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 1px dashed var(--gold); }
+        h2 { color: var(--gold); border-bottom: 1px solid #444; padding-bottom: 10px; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #0f1115; border: 1px solid #444; color: white; border-radius: 8px; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-add { background: var(--gold); color: #000; }
+        .btn-expert { background: #10b981; color: white; }
+        .section-tag { background: #333; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; margin: 2px; display: inline-block; }
     </style>
 </head>
 <body>
 
-<h1 style="text-align:center; color:var(--gold);"><i class="fas fa-tools"></i> لوحة إدارة منصة نِحرير</h1>
+<h1 style="text-align:center; color:var(--gold);">لوحة التحكم الشاملة (نظام الأقسام المتداخلة)</h1>
 
 <div class="grid">
-    
-    <!-- 1. إضافة الأقسام الفرعية بالصور -->
+    <!-- إضافة الأقسام -->
     <div class="card">
-        <h2><i class="fas fa-folder-plus"></i> 1. إنشاء قسم فرعي (بطاقة)</h2>
-        <img id="subCatPreview" src="https://via.placeholder.com/400x200?text=صورة+القسم" class="preview-img">
-        <input type="file" accept="image/*" onchange="processImage(this, 'subCatPreview', 'subCatData')">
-        
-        <label>تابع للقسم الرئيسي:</label>
-        <select id="parentMain">
-            <option value="طب و جراحة العظام">طب و جراحة العظام</option>
-            <option value="طب الأطفال">طب الأطفال</option>
-            <option value="طب التخدير">طب التخدير</option>
-            <option value="طب الأعصاب">طب الأعصاب</option>
-        </select>
-        
-        <input type="text" id="subName" placeholder="اسم القسم الفرعي (مثل: الرضوض والكسور)">
-        <textarea id="subDesc" placeholder="وصف قصير يظهر على البطاقة..."></textarea>
-        <button class="btn-blue" onclick="saveSubCategory()">إنشاء بطاقة القسم</button>
+        <h2><i class="fas fa-folder-plus"></i> إنشاء قسم جديد</h2>
+        <input type="text" id="catName" placeholder="اسم القسم (مثلاً: المفاصل)">
+        <input type="text" id="catParent" placeholder="اسم القسم الأب (اتركه فارغاً إذا كان قسماً رئيسياً)">
+        <input type="text" id="catImg" placeholder="رابط صورة القسم (URL)">
+        <textarea id="catDesc" placeholder="وصف القسم..."></textarea>
+        <button class="btn-add" onclick="saveCategory()">حفظ القسم</button>
     </div>
 
-    <!-- 2. إضافة المواد العلمية داخل الأقسام -->
+    <!-- إضافة الملفات والروابط -->
     <div class="card">
-        <h2><i class="fas fa-file-upload"></i> 2. إضافة محاضرة/ملف</h2>
-        <input type="text" id="fileTitle" placeholder="عنوان الملف">
-        <input type="text" id="fileLink" placeholder="رابط الملف (درایف/يوتيوب)">
-        
-        <label>اختر القسم الفرعي (يجب إنشاؤه أولاً):</label>
-        <select id="targetSubCat">
+        <h2><i class="fas fa-link"></i> إضافة ملف/رابط داخل قسم</h2>
+        <input type="text" id="fileName" placeholder="عنوان المادة العلمية">
+        <input type="text" id="fileLink" placeholder="رابط (Drive, YouTube, PDF)">
+        <select id="fileParentSelect">
             <option value="">جاري تحميل الأقسام...</option>
         </select>
-        
-        <button class="btn-gold" onclick="saveFile()">نشر الملف</button>
+        <button class="btn-add" onclick="saveFile()">إضافة المادة</button>
     </div>
 
-    <!-- 3. إضافة خبير جديد -->
+    <!-- إضافة الخبراء -->
     <div class="card">
-        <h2><i class="fas fa-user-md"></i> 3. إضافة خبير</h2>
-        <img id="expertPreview" src="https://via.placeholder.com/100?text=صورة+الخبير" class="preview-img" style="width:80px; height:80px; border-radius:50%; margin:auto; display:block;">
-        <input type="file" accept="image/*" onchange="processImage(this, 'expertPreview', 'expertData')">
-        
-        <input type="text" id="expName" placeholder="الاسم الكامل">
+        <h2><i class="fas fa-user-md"></i> إضافة خبير</h2>
+        <input type="text" id="expName" placeholder="اسم الخبير">
         <input type="text" id="expSpec" placeholder="التخصص">
-        <input type="email" id="expEmail" placeholder="البريد الإلكتروني">
-        <input type="tel" id="expPhone" placeholder="رقم الهاتف">
-        <button class="btn-blue" onclick="saveExpert()">حفظ الخبير</button>
+        <input type="text" id="expImg" placeholder="رابط صورة الخبير (URL)">
+        <input type="text" id="expEmail" placeholder="الإيميل">
+        <button class="btn-expert" onclick="saveExpert()">حفظ الخبير</button>
     </div>
-
 </div>
 
 <script>
@@ -86,77 +68,58 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    let storage = { subCatData: "", expertData: "" };
+    // 1. حفظ القسم (يدعم التداخل عبر اسم الأب)
+    async function saveCategory() {
+        const name = document.getElementById('catName').value;
+        const parent = document.getElementById('catParent').value || "root";
+        if(!name) return alert("الاسم مطلوب");
 
-    // معالجة الصور وضغطها لضمان القبول في Firestore
-    function processImage(input, previewId, storageKey) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const maxWidth = 400; 
-                const scale = maxWidth / img.width;
-                canvas.width = maxWidth;
-                canvas.height = img.height * scale;
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                storage[storageKey] = canvas.toDataURL('image/jpeg', 0.6); // ضغط عالي
-                document.getElementById(previewId).src = storage[storageKey];
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-
-    // حفظ القسم الفرعي
-    async function saveSubCategory() {
-        const name = document.getElementById('subName').value;
-        const parent = document.getElementById('parentMain').value;
-        if(!name || !storage.subCatData) return alert("الاسم والصورة مطلوبان");
-
-        await db.collection('sub_categories').add({
-            name, parent, description: document.getElementById('subDesc').value,
-            image: storage.subCatData, createdAt: new Date()
+        await db.collection('library_structure').add({
+            type: 'category',
+            name: name,
+            parent: parent,
+            image: document.getElementById('catImg').value || "https://via.placeholder.com/150",
+            description: document.getElementById('catDesc').value,
+            createdAt: new Date()
         });
-        alert("تم إنشاء القسم الفرعي");
+        alert("تم حفظ القسم بنجاح");
         location.reload();
     }
 
-    // جلب الأقسام الفرعية للقائمة المنسدلة
-    db.collection('sub_categories').onSnapshot(snap => {
-        let options = '<option value="">اختر القسم الفرعي...</option>';
-        snap.forEach(doc => {
-            options += `<option value="${doc.data().name}">${doc.data().name} (${doc.data().parent})</option>`;
-        });
-        document.getElementById('targetSubCat').innerHTML = options;
-    });
-
-    // حفظ الملف العلمي
+    // 2. حفظ الملفات داخل الأقسام
     async function saveFile() {
-        const title = document.getElementById('fileTitle').value;
-        const sub = document.getElementById('targetSubCat').value;
-        if(!title || !sub) return alert("أكمل البيانات");
+        const name = document.getElementById('fileName').value;
+        const parent = document.getElementById('fileParentSelect').value;
+        if(!name || !parent) return alert("أكمل البيانات");
 
-        await db.collection('nihrir_files').add({
-            title, link: document.getElementById('fileLink').value,
-            subCategory: sub, createdAt: new Date()
+        await db.collection('library_structure').add({
+            type: 'file',
+            name: name,
+            link: document.getElementById('fileLink').value,
+            parent: parent,
+            createdAt: new Date()
         });
-        alert("تم رفع الملف بنجاح");
+        alert("تمت إضافة المادة العلمية");
     }
 
-    // حفظ الخبير
-    async function saveExpert() {
-        const name = document.getElementById('expName').value;
-        if(!name || !storage.expertData) return alert("الاسم والصورة مطلوبان");
-
-        await db.collection('experts').add({
-            name, spec: document.getElementById('expSpec').value,
-            email: document.getElementById('expEmail').value,
-            phone: document.getElementById('expPhone').value,
-            photo: storage.expertData
+    // جلب الأقسام للقائمة المنسدلة
+    db.collection('library_structure').where('type', '==', 'category').onSnapshot(snap => {
+        let options = '<option value="">اختر القسم المستهدف...</option>';
+        snap.forEach(doc => {
+            options += `<option value="${doc.data().name}">${doc.data().name}</option>`;
         });
-        alert("تم حفظ الخبير بنجاح");
+        document.getElementById('fileParentSelect').innerHTML = options;
+    });
+
+    // 3. حفظ الخبراء
+    async function saveExpert() {
+        await db.collection('experts').add({
+            name: document.getElementById('expName').value,
+            spec: document.getElementById('expSpec').value,
+            image: document.getElementById('expImg').value,
+            email: document.getElementById('expEmail').value
+        });
+        alert("تم حفظ الخبير");
         location.reload();
     }
 </script>
