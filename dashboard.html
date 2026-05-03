@@ -2,97 +2,67 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>منصة نِحرير | البوابة العلمية</title>
+    <title>منصة نِحرير | المكتبة العلمية</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --navy: #0a192f; --gold: #c5a059; --text: #334155; --bg: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: var(--text); }
+        :root { --navy: #0a192f; --gold: #c5a059; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; }
+        .header { background: var(--navy); padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .logo { font-size: 1.8rem; color: var(--gold); font-weight: bold; }
+        .nav-menu { display: flex; list-style: none; gap: 25px; margin: 0; color: white; cursor: pointer; }
+        .nav-menu li:hover { color: var(--gold); }
         
-        /* Navbar الأكاديمي */
-        .navbar { background: var(--navy); padding: 0 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; height: 80px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        .logo { font-size: 1.8rem; color: var(--gold); font-weight: 800; text-decoration: none; }
-        .nav-menu { display: flex; list-style: none; margin: 0; height: 100%; }
-        .nav-menu li { display: flex; align-items: center; padding: 0 20px; color: #fff; cursor: pointer; transition: 0.3s; font-weight: 500; border-bottom: 4px solid transparent; }
-        .nav-menu li:hover, .nav-menu li.active { background: rgba(255,255,255,0.05); color: var(--gold); border-bottom-color: var(--gold); }
-
-        .container { max-width: 1300px; margin: 40px auto; padding: 0 20px; }
-
-        /* محرك البحث الداخلي */
-        .search-container { position: relative; margin-bottom: 30px; display: none; }
-        .search-container.visible { display: block; }
-        .search-input { width: 100%; padding: 15px 50px 15px 15px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 1.1rem; outline: none; transition: 0.3s; box-sizing: border-box; }
-        .search-input:focus { border-color: var(--gold); box-shadow: 0 0 15px rgba(197, 160, 89, 0.1); }
-        .search-icon { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 1.2rem; }
-
-        /* نظام البطاقات */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-        .science-card { background: white; border-radius: 12px; padding: 25px; transition: 0.3s; border: 1px solid #e2e8f0; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
-        .science-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-color: var(--gold); }
-        .science-card::before { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 100%; background: var(--gold); }
+        .container { max-width: 1200px; margin: 40px auto; padding: 20px; }
+        .search-box { width: 100%; padding: 15px; border-radius: 10px; border: 1.5px solid #ddd; margin-bottom: 30px; font-size: 1.1rem; }
         
-        .card-type { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; font-weight: bold; margin-bottom: 10px; }
-        .card-title { font-size: 1.2rem; color: var(--navy); margin: 0 0 15px 0; line-height: 1.4; }
-        
-        .btn-access { background: var(--navy); color: var(--gold); text-align: center; padding: 10px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem; transition: 0.3s; border: 1px solid var(--navy); }
-        .btn-access:hover { background: transparent; color: var(--navy); }
+        /* تصميم الأقسام */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .spec-card { background: white; padding: 25px; border-radius: 15px; text-align: center; border-top: 4px solid var(--gold); box-shadow: 0 10px 20px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; }
+        .spec-card:hover { transform: translateY(-10px); }
+        .spec-card i { font-size: 3rem; color: var(--navy); margin-bottom: 15px; }
+        .spec-card h3 { margin: 0; font-size: 1.1rem; color: var(--navy); }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.5s ease-out; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* المواد العلمية */
+        .item-card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-right: 6px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
+        .btn-view { background: var(--navy); color: var(--gold); padding: 8px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; }
+        .btn-home { background: var(--gold); color: var(--navy); padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-<nav class="navbar">
-    <a href="#" class="logo">نِحرير <small style="font-size: 0.5em; font-weight: normal; color: #fff;">| REHAB</small></a>
+<header class="header">
+    <div class="logo">نِحرير</div>
     <ul class="nav-menu">
-        <li class="active" onclick="switchTab('cats', this)">الأقسام</li>
-        <li onclick="switchTab('books', this)">الكتب العلمية</li>
-        <li onclick="switchTab('research', this)">الدراسات والأبحاث</li>
-        <li onclick="switchTab('experts', this)">نخبة الخبراء</li>
-        <li onclick="switchTab('about', this)">حول المنصة</li>
+        <li onclick="location.reload()">الأقسام</li>
+        <li onclick="showOnly('book')">الكتب</li>
+        <li onclick="showOnly('research')">الأبحاث</li>
     </ul>
-</nav>
+</header>
 
 <div class="container">
+    <input type="text" id="search" class="search-box" placeholder="ابحث عن كتاب، بحث، أو تخصص..." onkeyup="filterItems()">
     
-    <!-- محرك البحث (يظهر في الكتب والأبحاث فقط) -->
-    <div id="search-box" class="search-container">
-        <i class="fas fa-search search-icon"></i>
-        <input type="text" id="mainSearch" class="search-input" placeholder="ابحث عن عنوان، مؤلف، أو تخصص دقيق..." onkeyup="filterContent()">
+    <div id="home-btn-area"></div>
+
+    <!-- شبكة الأقسام الثابتة -->
+    <div id="main-grid" class="grid">
+        <!-- تخصصات طبية -->
+        <div class="spec-card" onclick="loadContent('طب العظام')"><i class="fas fa-bone"></i><h3>طب العظام</h3></div>
+        <div class="spec-card" onclick="loadContent('طب القلب')"><i class="fas fa-heartbeat"></i><h3>طب القلب</h3></div>
+        <div class="spec-card" onclick="loadContent('طب الأعصاب')"><i class="fas fa-brain"></i><h3>طب الأعصاب</h3></div>
+        <div class="spec-card" onclick="loadContent('التأهيل الحركي')"><i class="fas fa-running"></i><h3>التأهيل الحركي</h3></div>
+        <div class="spec-card" onclick="loadContent('العلاج الطبيعي')"><i class="fas fa-hands-helping"></i><h3>العلاج الطبيعي</h3></div>
+        <div class="spec-card" onclick="loadContent('الطب الرياضي')"><i class="fas fa-dumbbell"></i><h3>الطب الرياضي</h3></div>
+        <div class="spec-card" onclick="loadContent('الأشعة والتشخيص')"><i class="fas fa-x-ray"></i><h3>الأشعة</h3></div>
+        <div class="spec-card" onclick="loadContent('التغذية العلاجية')"><i class="fas fa-apple-alt"></i><h3>التغذية</h3></div>
+        <div class="spec-card" onclick="loadContent('طب الطوارئ')"><i class="fas fa-ambulance"></i><h3>الطوارئ</h3></div>
+        <div class="spec-card" onclick="loadContent('الطب البديل')"><i class="fas fa-leaf"></i><h3>الطب البديل</h3></div>
+        <!-- يمكنك إضافة المزيد يدوياً هنا بنفس التنسيق -->
     </div>
 
-    <!-- قسم الأقسام -->
-    <div id="cats" class="tab-content active">
-        <div id="path-nav" style="margin-bottom:20px; display:none;">
-            <button onclick="loadCategories('root')" style="background:var(--navy); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">🏠 العودة للمستودع الرئيسي</button>
-        </div>
-        <div id="cat-grid" class="grid"></div>
-        <div id="folder-items" class="grid" style="margin-top:30px;"></div>
-    </div>
-
-    <!-- قسم الكتب والأبحاث -->
-    <div id="content-view" class="tab-content">
-        <div id="items-grid" class="grid"></div>
-    </div>
-
-    <!-- قسم الخبراء -->
-    <div id="experts" class="tab-content">
-        <div id="experts-grid" class="grid"></div>
-    </div>
-
-    <!-- قسم حول -->
-    <div id="about" class="tab-content">
-        <div class="science-card" style="max-width: 800px; margin: auto;">
-            <h2 style="color:var(--navy)">رسالة منصة نِحرير</h2>
-            <p>منصة بحثية متخصصة في التأهيل الحركي والعلاج الطبيعي، تسعى لتمكين الباحثين العرب من الوصول لأحدث المراجع العلمية والدراسات الميدانية برؤية أكاديمية دقيقة.</p>
-            <p><strong>المشرف العام:</strong> أخصائي التأهيل الحركي د. مهدي</p>
-        </div>
-    </div>
-
+    <div id="content-list" style="margin-top: 20px;"></div>
 </div>
 
 <script>
@@ -107,105 +77,57 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    let currentType = 'category';
-
-    function switchTab(type, el) {
-        document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active'));
-        el.classList.add('active');
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        
-        const searchBox = document.getElementById('search-box');
-        
-        if(type === 'cats') {
-            document.getElementById('cats').classList.add('active');
-            searchBox.classList.remove('visible');
-            loadCategories('root');
-        } else if(type === 'books' || type === 'research') {
-            document.getElementById('content-view').classList.add('active');
-            searchBox.classList.add('visible');
-            currentType = type === 'books' ? 'book' : 'research';
-            loadFullContent(currentType);
-        } else if(type === 'experts') {
-            document.getElementById('experts').classList.add('active');
-            searchBox.classList.remove('visible');
-            loadExperts();
-        } else {
-            document.getElementById('about').classList.add('active');
-            searchBox.classList.remove('visible');
-        }
+    // العودة للرئيسية
+    function goHome() {
+        document.getElementById('main-grid').style.display = 'grid';
+        document.getElementById('content-list').innerHTML = '';
+        document.getElementById('home-btn-area').innerHTML = '';
     }
 
-    // تحميل الأقسام الشجرية
-    async function loadCategories(parent) {
-        const grid = document.getElementById('cat-grid');
-        const items = document.getElementById('folder-items');
-        grid.innerHTML = "جاري الاتصال بالمكتبة..."; items.innerHTML = "";
-        document.getElementById('path-nav').style.display = parent === 'root' ? 'none' : 'block';
-
-        const snap = await db.collection('nihrir_data').where('parent', '==', parent).get();
-        grid.innerHTML = "";
+    // تحميل المحتوى حسب القسم
+    async function loadContent(category) {
+        document.getElementById('main-grid').style.display = 'none';
+        document.getElementById('home-btn-area').innerHTML = `<button class="btn-home" onclick="goHome()">← العودة للأقسام الرئيسية</button> <h2 style="color:var(--navy)">${category}</h2>`;
+        
+        const list = document.getElementById('content-list');
+        list.innerHTML = "جاري تحميل المراجع...";
+        
+        const snap = await db.collection('nihrir_data').where('parent', '==', category).get();
+        list.innerHTML = snap.empty ? "<p>لا توجد مواد علمية في هذا القسم حالياً.</p>" : "";
+        
         snap.forEach(doc => {
             const d = doc.data();
-            if(d.type === 'category') {
-                grid.innerHTML += `
-                <div class="science-card" onclick="loadCategories('${d.name}')" style="cursor:pointer; text-align:center;">
-                    <i class="fas fa-microscope" style="font-size:3rem; color:var(--navy); margin-bottom:15px;"></i>
-                    <h3 class="card-title">${d.name}</h3>
-                    <span style="color:var(--gold)">استعراض القسم <i class="fas fa-chevron-left"></i></span>
+            list.innerHTML += `
+                <div class="item-card searchable">
+                    <div>
+                        <span style="color:var(--gold); font-weight:bold;">[${d.type === 'book' ? 'كتاب' : 'بحث'}]</span>
+                        <strong style="margin-right:10px;">${d.name}</strong>
+                    </div>
+                    <a href="${d.payload}" target="_blank" class="btn-view">فتح المصدر</a>
                 </div>`;
-            } else {
-                items.innerHTML += renderCard(d);
-            }
         });
     }
 
-    // تحميل الكتب/الأبحاث مع البحث
-    async function loadFullContent(type) {
-        const grid = document.getElementById('items-grid');
-        grid.innerHTML = "جاري تصفية المراجع...";
+    // البحث الفوري
+    function filterItems() {
+        const query = document.getElementById('search').value.toLowerCase();
+        document.querySelectorAll('.searchable, .spec-card').forEach(el => {
+            el.style.display = el.innerText.toLowerCase().includes(query) ? '' : 'none';
+        });
+    }
+
+    // إظهار نوع واحد فقط (كتب أو أبحاث)
+    async function showOnly(type) {
+        document.getElementById('main-grid').style.display = 'none';
+        document.getElementById('home-btn-area').innerHTML = `<button class="btn-home" onclick="goHome()">← العودة للأقسام</button> <h2>جميع ${type === 'book' ? 'الكتب' : 'الأبحاث'}</h2>`;
+        const list = document.getElementById('content-list');
         const snap = await db.collection('nihrir_data').where('type', '==', type).get();
-        grid.innerHTML = "";
-        snap.forEach(doc => { grid.innerHTML += renderCard(doc.data()); });
-    }
-
-    function renderCard(d) {
-        return `
-            <div class="science-card searchable-item">
-                <div>
-                    <div class="card-type">${d.type === 'book' ? 'كتاب مرجعي' : 'دراسة علمية'}</div>
-                    <h3 class="card-title">${d.name}</h3>
-                    <p style="font-size:0.8rem; color:#64748b;"><i class="fas fa-folder-open"></i> ${d.parent}</p>
-                </div>
-                <a href="${d.payload}" target="_blank" class="btn-access">تحميل المصدر <i class="fas fa-file-pdf"></i></a>
-            </div>`;
-    }
-
-    // محرك البحث الفوري
-    function filterContent() {
-        const query = document.getElementById('mainSearch').value.toLowerCase();
-        document.querySelectorAll('.searchable-item').forEach(item => {
-            const text = item.innerText.toLowerCase();
-            item.style.display = text.includes(query) ? 'block' : 'none';
-        });
-    }
-
-    async function loadExperts() {
-        const grid = document.getElementById('experts-grid');
-        const snap = await db.collection('experts').get();
-        grid.innerHTML = "";
+        list.innerHTML = "";
         snap.forEach(doc => {
-            const e = doc.data();
-            grid.innerHTML += `
-                <div class="science-card" style="text-align:center;">
-                    <img src="${e.image}" style="width:100px; height:100px; border-radius:50%; margin:auto; border:3px solid var(--gold);">
-                    <h3 class="card-title" style="margin-top:15px;">${e.name}</h3>
-                    <p class="tag">${e.spec}</p>
-                    <a href="mailto:${e.email}" class="btn-access" style="background:var(--gold); color:var(--navy); border:none;">تواصل مهني</a>
-                </div>`;
+            const d = doc.data();
+            list.innerHTML += `<div class="item-card searchable"><div><strong>${d.name}</strong><br><small>${d.parent}</small></div><a href="${d.payload}" target="_blank" class="btn-view">فتح</a></div>`;
         });
     }
-
-    loadCategories('root');
 </script>
 </body>
 </html>
