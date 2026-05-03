@@ -10,49 +10,49 @@
         :root { --gold: #c5a059; --bg: #12141a; --card: #1e2128; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 20px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
-        .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom:20px; }
         h2 { color: var(--gold); border-bottom: 1px solid #444; padding-bottom: 10px; }
         input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #0f1115; border: 1px solid #444; color: white; border-radius: 8px; }
         button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .btn-add { background: var(--gold); color: #000; }
-        .btn-expert { background: #10b981; color: white; }
-        .section-tag { background: #333; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; margin: 2px; display: inline-block; }
+        .btn-user { background: #3b82f6; color: white; margin-top:5px; }
+        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333; }
     </style>
 </head>
 <body>
 
-<h1 style="text-align:center; color:var(--gold);">لوحة التحكم الشاملة (نظام الأقسام المتداخلة)</h1>
+<h1 style="text-align:center; color:var(--gold);">لوحة تحكم نِحرير الشاملة</h1>
 
 <div class="grid">
-    <!-- إضافة الأقسام -->
+    <!-- إدارة الأقسام والملفات -->
     <div class="card">
-        <h2><i class="fas fa-folder-plus"></i> إنشاء قسم جديد</h2>
-        <input type="text" id="catName" placeholder="اسم القسم (مثلاً: المفاصل)">
-        <input type="text" id="catParent" placeholder="اسم القسم الأب (اتركه فارغاً إذا كان قسماً رئيسياً)">
-        <input type="text" id="catImg" placeholder="رابط صورة القسم (URL)">
-        <textarea id="catDesc" placeholder="وصف القسم..."></textarea>
-        <button class="btn-add" onclick="saveCategory()">حفظ القسم</button>
-    </div>
-
-    <!-- إضافة الملفات والروابط -->
-    <div class="card">
-        <h2><i class="fas fa-link"></i> إضافة ملف/رابط داخل قسم</h2>
-        <input type="text" id="fileName" placeholder="عنوان المادة العلمية">
-        <input type="text" id="fileLink" placeholder="رابط (Drive, YouTube, PDF)">
-        <select id="fileParentSelect">
-            <option value="">جاري تحميل الأقسام...</option>
+        <h2><i class="fas fa-sitemap"></i> إضافة (قسم أو ملف)</h2>
+        <select id="dataType">
+            <option value="category">إنشاء قسم جديد (مجلد)</option>
+            <option value="file">إضافة مادة علمية (رابط/ملف)</option>
         </select>
-        <button class="btn-add" onclick="saveFile()">إضافة المادة</button>
+        
+        <input type="text" id="itemName" placeholder="الاسم (مثلاً: طب العظام أو محاضرة الكسور)">
+        <input type="text" id="itemParent" placeholder="الأب (اكتب اسم القسم الذي يتبعه، أو اتركه فارغاً للرئيسي)">
+        <input type="text" id="itemPayload" placeholder="رابط الصورة (للقسم) أو رابط الملف (للمحاضرة)">
+        
+        <button class="btn-add" onclick="saveItem()">حفظ البيانات</button>
     </div>
 
-    <!-- إضافة الخبراء -->
+    <!-- إدارة الخبراء -->
     <div class="card">
         <h2><i class="fas fa-user-md"></i> إضافة خبير</h2>
         <input type="text" id="expName" placeholder="اسم الخبير">
         <input type="text" id="expSpec" placeholder="التخصص">
-        <input type="text" id="expImg" placeholder="رابط صورة الخبير (URL)">
+        <input type="text" id="expImg" placeholder="رابط صورة الخبير">
         <input type="text" id="expEmail" placeholder="الإيميل">
-        <button class="btn-expert" onclick="saveExpert()">حفظ الخبير</button>
+        <button style="background:#10b981; color:white" onclick="saveExpert()">حفظ الخبير</button>
+    </div>
+
+    <!-- تفعيل المستخدمين الجدد -->
+    <div class="card">
+        <h2><i class="fas fa-users-cog"></i> طلبات التسجيل (Pending)</h2>
+        <div id="pendingUsers">جاري التحميل...</div>
     </div>
 </div>
 
@@ -68,50 +68,24 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // 1. حفظ القسم (يدعم التداخل عبر اسم الأب)
-    async function saveCategory() {
-        const name = document.getElementById('catName').value;
-        const parent = document.getElementById('catParent').value || "root";
+    // حفظ قسم أو ملف
+    async function saveItem() {
+        const type = document.getElementById('dataType').value;
+        const name = document.getElementById('itemName').value;
+        const parent = document.getElementById('itemParent').value || "root";
+        const payload = document.getElementById('itemPayload').value;
+
         if(!name) return alert("الاسم مطلوب");
 
-        await db.collection('library_structure').add({
-            type: 'category',
-            name: name,
-            parent: parent,
-            image: document.getElementById('catImg').value || "https://via.placeholder.com/150",
-            description: document.getElementById('catDesc').value,
+        await db.collection('nihrir_data').add({
+            type, name, parent, payload,
             createdAt: new Date()
         });
-        alert("تم حفظ القسم بنجاح");
+        alert("تم الحفظ بنجاح");
         location.reload();
     }
 
-    // 2. حفظ الملفات داخل الأقسام
-    async function saveFile() {
-        const name = document.getElementById('fileName').value;
-        const parent = document.getElementById('fileParentSelect').value;
-        if(!name || !parent) return alert("أكمل البيانات");
-
-        await db.collection('library_structure').add({
-            type: 'file',
-            name: name,
-            link: document.getElementById('fileLink').value,
-            parent: parent,
-            createdAt: new Date()
-        });
-        alert("تمت إضافة المادة العلمية");
-    }
-
-    // جلب الأقسام للقائمة المنسدلة
-    db.collection('library_structure').where('type', '==', 'category').onSnapshot(snap => {
-        let options = '<option value="">اختر القسم المستهدف...</option>';
-        snap.forEach(doc => {
-            options += `<option value="${doc.data().name}">${doc.data().name}</option>`;
-        });
-        document.getElementById('fileParentSelect').innerHTML = options;
-    });
-
-    // 3. حفظ الخبراء
+    // حفظ خبير
     async function saveExpert() {
         await db.collection('experts').add({
             name: document.getElementById('expName').value,
@@ -120,7 +94,24 @@
             email: document.getElementById('expEmail').value
         });
         alert("تم حفظ الخبير");
-        location.reload();
+    }
+
+    // إدارة المستخدمين
+    db.collection('users').where('status', '==', 'pending').onSnapshot(snap => {
+        let h = '';
+        snap.forEach(doc => {
+            const u = doc.data();
+            h += `<div class="user-row">
+                <span>${u.name}</span>
+                <button class="btn-user" onclick="activateUser('${doc.id}')">تفعيل</button>
+            </div>`;
+        });
+        document.getElementById('pendingUsers').innerHTML = h || 'لا توجد طلبات معلقة';
+    });
+
+    async function activateUser(id) {
+        await db.collection('users').doc(id).update({ status: 'active' });
+        alert("تم تفعيل المستخدم");
     }
 </script>
 </body>
