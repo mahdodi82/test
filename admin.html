@@ -2,78 +2,135 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة منصة نِحرير - تحكم كامل</title>
+    <title>لوحة التحكم المركزية | نِحرير</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --gold: #c5a059; --bg: #0f1115; --card: #1e2128; --danger: #ef4444; --success: #10b981; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; }
-        .admin-container { max-width: 1200px; margin: auto; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; }
-        h2 { color: var(--gold); border-bottom: 2px solid var(--gold); padding-bottom: 10px; display: flex; justify-content: space-between; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #0b0d11; border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; }
-        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-gold { background: var(--gold); color: black; width: 100%; }
-        .btn-edit { background: #3b82f6; color: white; margin-left: 5px; }
-        .btn-delete { background: var(--danger); color: white; }
+        :root { --gold: #c5a059; --bg: #0b0e14; --card: #161b22; --border: #30363d; --text: #c9d1d9; }
+        body { font-family: 'Segoe UI', Tahoma; background: var(--bg); color: var(--text); margin: 0; display: flex; }
         
-        /* تنسيق جداول البيانات */
-        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .data-table th, .data-table td { padding: 12px; border-bottom: 1px solid #333; text-align: right; font-size: 0.9rem; }
-        .data-table th { color: var(--gold); }
-        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; }
-        .status-active { background: var(--success); }
-        .status-pending { background: #f59e0b; }
+        /* Sidebar */
+        .sidebar { width: 250px; background: var(--card); border-left: 1px solid var(--border); height: 100vh; position: fixed; padding: 20px; }
+        .sidebar h2 { color: var(--gold); text-align: center; font-size: 1.5rem; margin-bottom: 30px; }
+        .nav-link { display: block; padding: 12px; color: var(--text); text-decoration: none; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
+        .nav-link:hover, .nav-link.active { background: var(--gold); color: black; }
+
+        /* Main Content */
+        .main-content { margin-right: 250px; padding: 40px; width: 100%; }
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* Forms & Tables */
+        .card { background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        input, select, textarea { background: #0d1117; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        button { padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-save { background: var(--gold); color: black; width: 100%; margin-top: 15px; }
+        .btn-cancel { background: #30363d; color: white; width: 100%; margin-top: 5px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #0d1117; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 15px; text-align: right; border-bottom: 1px solid var(--border); }
+        th { background: #1f242c; color: var(--gold); }
+        .action-btns { display: flex; gap: 10px; }
+        .edit-icon { color: #58a6ff; cursor: pointer; }
+        .delete-icon { color: #f85149; cursor: pointer; }
+
+        /* Badges */
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; }
+        .badge-user { background: #238636; }
+        .badge-pending { background: #d29922; }
     </style>
 </head>
 <body>
 
-<div class="admin-container">
-    <h1 style="text-align:center; color:var(--gold);">لوحة التحكم الشاملة - نِحرير</h1>
+<div class="sidebar">
+    <h2>نِحرير ADMIN</h2>
+    <div class="nav-link active" onclick="showSection('library-sec')"><i class="fas fa-book"></i> إدارة المكتبة</div>
+    <div class="nav-link" onclick="showSection('experts-sec')"><i class="fas fa-user-md"></i> إدارة الخبراء</div>
+    <div class="nav-link" onclick="showSection('users-sec')"><i class="fas fa-users"></i> إدارة الباحثين</div>
+</div>
 
-    <div class="grid">
-        <!-- 1. إضافة وتعديل المحتوى -->
-        <div class="card">
-            <h2 id="formTitle">إضافة قسم أو مادة</h2>
-            <input type="hidden" id="editId">
-            <select id="dataType">
-                <option value="category">قسم (مجلد)</option>
-                <option value="file">مادة علمية (رابط)</option>
-            </select>
-            <input type="text" id="itemName" placeholder="الاسم">
-            <input type="text" id="itemParent" placeholder="الأب (مثلاً: طب العظام أو root)">
-            <input type="text" id="itemPayload" placeholder="رابط الصورة أو رابط الملف">
-            <button class="btn-gold" id="saveBtn" onclick="saveData()">حفظ البيانات</button>
-            <button class="btn-delete" id="cancelBtn" style="display:none; margin-top:10px; width:100%" onclick="resetForm()">إلغاء التعديل</button>
-        </div>
+<div class="main-content">
 
-        <!-- 2. إدارة الباحثين المسجلين -->
+    <!-- قسم المكتبة (أقسام ومواد) -->
+    <div id="library-sec" class="section active">
         <div class="card">
-            <h2>إدارة الباحثين</h2>
-            <div style="max-height: 300px; overflow-y: auto;">
-                <table class="data-table">
-                    <thead><tr><th>الاسم</th><th>الحالة</th><th>إجراء</th></tr></thead>
-                    <tbody id="usersList"></tbody>
-                </table>
+            <h2 id="lib-title">إضافة محتوى جديد للمكتبة</h2>
+            <input type="hidden" id="lib-id">
+            <div class="form-grid">
+                <div>
+                    <label>نوع المحتوى</label>
+                    <select id="lib-type">
+                        <option value="category">قسم (مجلد)</option>
+                        <option value="file">مادة علمية (رابط ملف)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>الاسم</label>
+                    <input type="text" id="lib-name" placeholder="مثلاً: الطب الرياضي">
+                </div>
+                <div>
+                    <label>القسم الأب (Parent)</label>
+                    <input type="text" id="lib-parent" placeholder="اتركه فارغاً للرئيسية أو اكتب اسم القسم">
+                </div>
+                <div>
+                    <label>الرابط (صورة للقسم أو ملف للمادة)</label>
+                    <input type="text" id="lib-payload" placeholder="https://...">
+                </div>
             </div>
+            <button class="btn-save" onclick="saveLibraryData()">حفظ البيانات</button>
+            <button class="btn-cancel" id="lib-cancel" style="display:none" onclick="resetLibForm()">إلغاء التعديل</button>
         </div>
-    </div>
 
-    <!-- 3. عرض وإدارة الأقسام والمواد المضافة -->
-    <div class="card">
-        <h2>إدارة المحتوى الحالي (تعديل وحذف)</h2>
-        <div style="max-height: 500px; overflow-y: auto;">
-            <table class="data-table">
-                <thead><tr><th>النوع</th><th>الاسم</th><th>الأب</th><th>الرابط</th><th>التحكم</th></tr></thead>
-                <tbody id="contentList"></tbody>
+        <div class="card">
+            <h3>المحتوى الحالي</h3>
+            <table id="lib-table">
+                <thead><tr><th>النوع</th><th>الاسم</th><th>الأب</th><th>التحكم</th></tr></thead>
+                <tbody id="lib-body"></tbody>
             </table>
         </div>
     </div>
+
+    <!-- قسم الخبراء -->
+    <div id="experts-sec" class="section">
+        <div class="card">
+            <h2 id="exp-title">إضافة خبير جديد</h2>
+            <input type="hidden" id="exp-id">
+            <div class="form-grid">
+                <input type="text" id="exp-name" placeholder="اسم الخبير">
+                <input type="text" id="exp-spec" placeholder="التخصص (مثلاً: جراحة عظام)">
+                <input type="text" id="exp-img" placeholder="رابط صورة الخبير">
+                <input type="text" id="exp-email" placeholder="البريد الإلكتروني">
+            </div>
+            <button class="btn-save" onclick="saveExpertData()">حفظ الخبير</button>
+            <button class="btn-cancel" id="exp-cancel" style="display:none" onclick="resetExpForm()">إلغاء التعديل</button>
+        </div>
+
+        <div class="card">
+            <h3>قائمة الخبراء</h3>
+            <table>
+                <thead><tr><th>الصورة</th><th>الاسم</th><th>التخصص</th><th>التحكم</th></tr></thead>
+                <tbody id="exp-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- قسم المستخدمين -->
+    <div id="users-sec" class="section">
+        <div class="card">
+            <h3>إدارة صلاحيات الباحثين</h3>
+            <table>
+                <thead><tr><th>اسم الباحث</th><th>الحالة</th><th>الإجراء</th><th>حذف</th></tr></thead>
+                <tbody id="users-body"></tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 <script>
+    // --- إعدادات Firebase ---
     const firebaseConfig = {
         apiKey: "AIzaSyAOiRs8QWVxo0FMmFJrv_KTNDNvxrp8TzE",
         authDomain: "nihrir-7527c.firebaseapp.com",
@@ -85,28 +142,31 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // جلب الباحثين (المسجلين سابقاً وحالياً)
-    db.collection('users').onSnapshot(snap => {
-        let h = '';
-        snap.forEach(doc => {
-            const u = doc.data();
-            h += `<tr>
-                <td>${u.name}</td>
-                <td><span class="status-badge ${u.status === 'active' ? 'status-active' : 'status-pending'}">${u.status}</span></td>
-                <td>
-                    <button class="btn-edit" style="padding:5px" onclick="toggleUser('${doc.id}', '${u.status}')">تغيير الحالة</button>
-                </td>
-            </tr>`;
-        });
-        document.getElementById('usersList').innerHTML = h;
-    });
-
-    async function toggleUser(id, currentStatus) {
-        const next = currentStatus === 'active' ? 'pending' : 'active';
-        await db.collection('users').doc(id).update({ status: next });
+    // --- نظام التنقل ---
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.currentTarget.classList.add('active');
     }
 
-    // جلب المحتوى للإدارة
+    // --- إدارة المكتبة (إضافة/تعديل/حذف) ---
+    async function saveLibraryData() {
+        const id = document.getElementById('lib-id').value;
+        const obj = {
+            type: document.getElementById('lib-type').value,
+            name: document.getElementById('lib-name').value,
+            parent: document.getElementById('lib-parent').value || "root",
+            payload: document.getElementById('lib-payload').value
+        };
+        if(!obj.name) return alert("يرجى إدخال الاسم");
+        
+        if(id) await db.collection('nihrir_data').doc(id).update(obj);
+        else await db.collection('nihrir_data').add(obj);
+        
+        resetLibForm();
+    }
+
     db.collection('nihrir_data').onSnapshot(snap => {
         let h = '';
         snap.forEach(doc => {
@@ -115,61 +175,109 @@
                 <td>${d.type === 'category' ? '📁' : '📄'}</td>
                 <td>${d.name}</td>
                 <td>${d.parent}</td>
-                <td><small>${d.payload.substring(0, 20)}...</small></td>
-                <td>
-                    <button class="btn-edit" onclick="editItem('${doc.id}', '${d.type}', '${d.name}', '${d.parent}', '${d.payload}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn-delete" onclick="deleteItem('${doc.id}')"><i class="fas fa-trash"></i></button>
+                <td class="action-btns">
+                    <i class="fas fa-edit edit-icon" onclick="editLib('${doc.id}', '${d.type}', '${d.name}', '${d.parent}', '${d.payload}')"></i>
+                    <i class="fas fa-trash delete-icon" onclick="deleteDoc('nihrir_data', '${doc.id}')"></i>
                 </td>
             </tr>`;
         });
-        document.getElementById('contentList').innerHTML = h;
+        document.getElementById('lib-body').innerHTML = h;
     });
 
-    // وظيفة الحفظ أو التعديل
-    async function saveData() {
-        const id = document.getElementById('editId').value;
-        const data = {
-            type: document.getElementById('dataType').value,
-            name: document.getElementById('itemName').value,
-            parent: document.getElementById('itemParent').value || "root",
-            payload: document.getElementById('itemPayload').value
+    function editLib(id, type, name, parent, payload) {
+        document.getElementById('lib-id').value = id;
+        document.getElementById('lib-type').value = type;
+        document.getElementById('lib-name').value = name;
+        document.getElementById('lib-parent').value = parent;
+        document.getElementById('lib-payload').value = payload;
+        document.getElementById('lib-title').innerText = "تعديل: " + name;
+        document.getElementById('lib-cancel').style.display = "block";
+    }
+
+    function resetLibForm() {
+        document.getElementById('lib-id').value = "";
+        document.getElementById('lib-name').value = "";
+        document.getElementById('lib-payload').value = "";
+        document.getElementById('lib-title').innerText = "إضافة محتوى جديد للمكتبة";
+        document.getElementById('lib-cancel').style.display = "none";
+    }
+
+    // --- إدارة الخبراء (إضافة/تعديل/حذف) ---
+    async function saveExpertData() {
+        const id = document.getElementById('exp-id').value;
+        const obj = {
+            name: document.getElementById('exp-name').value,
+            spec: document.getElementById('exp-spec').value,
+            image: document.getElementById('exp-img').value,
+            email: document.getElementById('exp-email').value
         };
+        if(id) await db.collection('experts').doc(id).update(obj);
+        else await db.collection('experts').add(obj);
+        resetExpForm();
+    }
 
-        if(id) {
-            await db.collection('nihrir_data').doc(id).update(data);
-            alert("تم التعديل بنجاح");
-        } else {
-            await db.collection('nihrir_data').add(data);
-            alert("تمت الإضافة");
+    db.collection('experts').onSnapshot(snap => {
+        let h = '';
+        snap.forEach(doc => {
+            const e = doc.data();
+            h += `<tr>
+                <td><img src="${e.image}" width="40" height="40" style="border-radius:50%"></td>
+                <td>${e.name}</td>
+                <td>${e.spec}</td>
+                <td class="action-btns">
+                    <i class="fas fa-edit edit-icon" onclick="editExp('${doc.id}', '${e.name}', '${e.spec}', '${e.image}', '${e.email}')"></i>
+                    <i class="fas fa-trash delete-icon" onclick="deleteDoc('experts', '${doc.id}')"></i>
+                </td>
+            </tr>`;
+        });
+        document.getElementById('exp-body').innerHTML = h;
+    });
+
+    function editExp(id, name, spec, img, email) {
+        document.getElementById('exp-id').value = id;
+        document.getElementById('exp-name').value = name;
+        document.getElementById('exp-spec').value = spec;
+        document.getElementById('exp-img').value = img;
+        document.getElementById('exp-email').value = email;
+        document.getElementById('exp-title').innerText = "تعديل بيانات: " + name;
+        document.getElementById('exp-cancel').style.display = "block";
+    }
+
+    function resetExpForm() {
+        document.getElementById('exp-id').value = "";
+        document.getElementById('exp-name').value = "";
+        document.getElementById('exp-spec').value = "";
+        document.getElementById('exp-img').value = "";
+        document.getElementById('exp-email').value = "";
+        document.getElementById('exp-title').innerText = "إضافة خبير جديد";
+        document.getElementById('exp-cancel').style.display = "none";
+    }
+
+    // --- إدارة المستخدمين ---
+    db.collection('users').onSnapshot(snap => {
+        let h = '';
+        snap.forEach(doc => {
+            const u = doc.data();
+            h += `<tr>
+                <td>${u.name}</td>
+                <td><span class="badge ${u.status === 'active' ? 'badge-user' : 'badge-pending'}">${u.status}</span></td>
+                <td><button onclick="toggleUser('${doc.id}', '${u.status}')" style="background:#3b82f6; color:white; padding:5px 10px">تغيير الحالة</button></td>
+                <td><i class="fas fa-trash delete-icon" onclick="deleteDoc('users', '${doc.id}')"></i></td>
+            </tr>`;
+        });
+        document.getElementById('users-body').innerHTML = h;
+    });
+
+    async function toggleUser(id, current) {
+        const next = current === 'active' ? 'pending' : 'active';
+        await db.collection('users').doc(id).update({ status: next });
+    }
+
+    // --- وظيفة الحذف العامة ---
+    async function deleteDoc(coll, id) {
+        if(confirm("هل أنت متأكد من الحذف؟ لا يمكن التراجع!")) {
+            await db.collection(coll).doc(id).delete();
         }
-        resetForm();
-    }
-
-    function editItem(id, type, name, parent, payload) {
-        document.getElementById('editId').value = id;
-        document.getElementById('dataType').value = type;
-        document.getElementById('itemName').value = name;
-        document.getElementById('itemParent').value = parent;
-        document.getElementById('itemPayload').value = payload;
-        document.getElementById('formTitle').innerText = "تعديل المادة: " + name;
-        document.getElementById('saveBtn').innerText = "تحديث التغييرات";
-        document.getElementById('cancelBtn').style.display = "block";
-    }
-
-    async function deleteItem(id) {
-        if(confirm("هل أنت متأكد من الحذف نهائياً؟")) {
-            await db.collection('nihrir_data').doc(id).delete();
-        }
-    }
-
-    function resetForm() {
-        document.getElementById('editId').value = "";
-        document.getElementById('itemName').value = "";
-        document.getElementById('itemParent').value = "";
-        document.getElementById('itemPayload').value = "";
-        document.getElementById('formTitle').innerText = "إضافة قسم أو مادة";
-        document.getElementById('saveBtn').innerText = "حفظ البيانات";
-        document.getElementById('cancelBtn').style.display = "none";
     }
 </script>
 </body>
