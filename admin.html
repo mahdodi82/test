@@ -15,89 +15,61 @@
         input, select { width: 100%; padding: 12px; margin: 10px 0; background: #0b0d11; border: 1px solid #444; color: white; border-radius: 8px; }
         button { cursor: pointer; border: none; font-weight: bold; border-radius: 8px; transition: 0.3s; }
         .btn-gold { background: var(--gold); color: black; width: 100%; padding: 15px; font-size: 1.1rem; }
+        .nav-item { padding: 15px; color: #ccc; cursor: pointer; display: block; border-radius: 8px; margin-bottom: 5px; }
+        .nav-item.active { background: var(--gold); color: black; }
         table { width: 100%; margin-top: 20px; border-collapse: collapse; background: #161b22; }
-        th, td { padding: 15px; text-align: right; border-bottom: 1px solid #333; }
-        th { color: var(--gold); }
-        .nav-item { padding: 15px; color: #ccc; cursor: pointer; display: block; text-decoration: none; border-radius: 8px; margin-bottom: 5px; }
-        .nav-item:hover, .nav-item.active { background: var(--gold); color: black; }
+        th, td { padding: 12px; text-align: right; border-bottom: 1px solid #333; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
     <h2 style="color:var(--gold); text-align:center;">نِحرير ADMIN</h2>
-    <div class="nav-item active" onclick="showTab('tab-lib')">إدارة المحتوى العلمي</div>
-    <div class="nav-item" onclick="showTab('tab-exp')">إدارة الخبراء</div>
-    <div class="nav-item" onclick="showTab('tab-users')">إدارة الباحثين</div>
+    <div class="nav-item active" onclick="showTab('tab-lib', this)">إدارة المكتبة</div>
+    <div class="nav-item" onclick="showTab('tab-exp', this)">إدارة الخبراء</div>
+    <div class="nav-item" onclick="showTab('tab-users', this)">إدارة الباحثين</div>
 </div>
 
 <div class="main">
+    <!-- إدارة المكتبة -->
     <div id="tab-lib" class="tab-content">
         <div class="card">
-            <h2 id="lib-title" style="color:var(--gold)">إضافة/تعديل مادة علمية</h2>
-            <input type="hidden" id="lib-id">
+            <h2 style="color:var(--gold)">إضافة مادة علمية</h2>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
                 <select id="lib-type">
                     <option value="book">كتاب علمي</option>
-                    <option value="research">بحث أو مقال</option>
-                    <option value="category">قسم فرعي جديد</option>
+                    <option value="research">بحث أو دراسة</option>
                 </select>
-                <input type="text" id="lib-name" placeholder="اسم المادة العلمية">
-                
-                <!-- القائمة المنسدلة للتخصصات -->
+                <input type="text" id="lib-name" placeholder="العنوان">
                 <select id="lib-parent">
-                    <option value="root">القسم الرئيسي (الواجهة)</option>
-                    <optgroup label="التخصصات الطبية">
-                        <option value="طب العظام">طب العظام</option>
-                        <option value="طب القلب">طب القلب</option>
-                        <option value="طب الأعصاب">طب الأعصاب</option>
-                        <option value="طب الأطفال">طب الأطفال</option>
-                        <option value="الجراحة العامة">الجراحة العامة</option>
-                        <option value="الطب الباطني">الطب الباطني</option>
-                        <option value="الطب الرياضي">الطب الرياضي</option>
-                        <option value="طب الطوارئ">طب الطوارئ</option>
-                        <option value="الأشعة والتشخيص">الأشعة والتشخيص</option>
-                        <option value="أمراض الدم">أمراض الدم</option>
-                        <option value="الطب النفسي">الطب النفسي</option>
-                        <option value="طب العيون">طب العيون</option>
-                        <option value="الجلدية">الجلدية</option>
-                        <option value="المسالك البولية">المسالك البولية</option>
-                        <option value="الأنف والأذن والحنجرة">الأنف والأذن والحنجرة</option>
-                        <option value="النساء والتوليد">النساء والتوليد</option>
-                    </optgroup>
-                    <optgroup label="التخصصات الشبه طبية">
-                        <option value="التأهيل الحركي">التأهيل الحركي</option>
-                        <option value="العلاج الطبيعي">العلاج الطبيعي</option>
-                        <option value="التمريض">التمريض</option>
-                        <option value="التغذية العلاجية">التغذية العلاجية</option>
-                        <option value="تقويم الأعضاء">تقويم الأعضاء</option>
-                        <option value="علاج النطق">علاج النطق</option>
-                        <option value="العلاج الوظيفي">العلاج الوظيفي</option>
-                        <option value="التحاليل الطبية">التحاليل الطبية</option>
-                        <option value="القبالة">القبالة</option>
-                        <option value="التخدير والإنعاش">التخدير والإنعاش</option>
-                        <option value="الطب البديل">الطب البديل (الحجامة وغيرها)</option>
-                    </optgroup>
+                    <option value="التأهيل الحركي">التأهيل الحركي</option>
+                    <option value="العلاج الطبيعي">العلاج الطبيعي</option>
+                    <option value="الطب الرياضي">الطب الرياضي</option>
+                    <option value="طب العظام">طب العظام</option>
+                    <option value="الطب البديل">الطب البديل</option>
                 </select>
-
-                <input type="text" id="lib-payload" placeholder="رابط الملف (Google Drive / Direct PDF)">
+                <input type="text" id="lib-payload" placeholder="رابط PDF">
             </div>
-            <button class="btn-gold" onclick="saveToLib()">حفظ ونشر المادة</button>
+            <button class="btn-gold" onclick="saveToLib()">نشر في المكتبة</button>
         </div>
-
-        <div class="card">
-            <h3>سجل المحتوى المنشور</h3>
-            <table id="lib-table">
-                <thead><tr><th>النوع</th><th>الاسم</th><th>التخصص</th><th>التحكم</th></tr></thead>
-                <tbody id="lib-body"></tbody>
-            </table>
-        </div>
+        <div class="card"><table id="lib-table"><thead><tr><th>النوع</th><th>الاسم</th><th>التحكم</th></tr></thead><tbody id="lib-body"></tbody></table></div>
     </div>
-    <!-- باقي التبويبات (الخبراء والباحثين) تبقى كما هي في الكود الأصلي -->
+
+    <!-- إدارة الخبراء -->
+    <div id="tab-exp" class="tab-content" style="display:none">
+        <div class="card">
+            <h2 style="color:var(--gold)">إضافة خبير</h2>
+            <input type="text" id="exp-name" placeholder="الاسم الكامل">
+            <input type="text" id="exp-spec" placeholder="التخصص">
+            <input type="text" id="exp-img" placeholder="رابط الصورة">
+            <input type="text" id="exp-email" placeholder="الإيميل">
+            <button class="btn-gold" onclick="saveExpert()">حفظ الخبير</button>
+        </div>
+        <div class="card"><table id="exp-table"><thead><tr><th>الخبير</th><th>التخصص</th><th>التحكم</th></tr></thead><tbody id="exp-body"></tbody></table></div>
+    </div>
 </div>
 
 <script>
-    // الإعدادات ووظائف الحفظ والحذف كما هي، فقط تم تعديل استهداف العناصر
     const firebaseConfig = {
         apiKey: "AIzaSyAOiRs8QWVxo0FMmFJrv_KTNDNvxrp8TzE",
         authDomain: "nihrir-7527c.firebaseapp.com",
@@ -109,35 +81,46 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    function showTab(id) {
+    function showTab(id, el) {
         document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById(id).style.display = 'block';
+        el.classList.add('active');
     }
 
+    // وظائف الحفظ (Firebase)
     async function saveToLib() {
-        const id = document.getElementById('lib-id').value;
-        const data = {
+        await db.collection('nihrir_data').add({
             type: document.getElementById('lib-type').value,
             name: document.getElementById('lib-name').value,
             parent: document.getElementById('lib-parent').value,
             payload: document.getElementById('lib-payload').value
-        };
-        if(id) await db.collection('nihrir_data').doc(id).update(data);
-        else await db.collection('nihrir_data').add(data);
-        alert("تم الحفظ بنجاح"); location.reload();
+        });
+        location.reload();
     }
 
-    db.collection('nihrir_data').onSnapshot(snap => {
-        let h = '';
-        snap.forEach(doc => {
-            const d = doc.data();
-            h += `<tr><td>${d.type}</td><td>${d.name}</td><td>${d.parent}</td>
-            <td><button onclick="deleteDoc('nihrir_data','${doc.id}')" style="background:red; padding:5px 10px; color:white">حذف</button></td></tr>`;
+    async function saveExpert() {
+        await db.collection('experts').add({
+            name: document.getElementById('exp-name').value,
+            spec: document.getElementById('exp-spec').value,
+            image: document.getElementById('exp-img').value,
+            email: document.getElementById('exp-email').value
         });
+        location.reload();
+    }
+
+    // استماع للبيانات (Realtime)
+    db.collection('nihrir_data').onSnapshot(s => {
+        let h = ''; s.forEach(d => { const v = d.data(); h += `<tr><td>${v.type}</td><td>${v.name}</td><td><button onclick="del('nihrir_data','${d.id}')">حذف</button></td></tr>`; });
         document.getElementById('lib-body').innerHTML = h;
     });
 
-    async function deleteDoc(c, id) { if(confirm("هل أنت متأكد من الحذف؟")) await db.collection(c).doc(id).delete(); }
+    db.collection('experts').onSnapshot(s => {
+        let h = ''; s.forEach(d => { const v = d.data(); h += `<tr><td>${v.name}</td><td>${v.spec}</td><td><button onclick="del('experts','${d.id}')">حذف</button></td></tr>`; });
+        document.getElementById('exp-body').innerHTML = h;
+    });
+
+    async function del(c, id) { if(confirm("حذف؟")) await db.collection(c).doc(id).delete(); }
 </script>
 </body>
 </html>
