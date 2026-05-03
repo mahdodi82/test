@@ -7,48 +7,58 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --dark: #0c2340; --gold: #c5a059; --bg: #f4f7f6; }
-        body { font-family: sans-serif; background: var(--bg); margin: 0; }
-        .header { background: var(--dark); color: white; padding: 20px; display: flex; justify-content: space-between; }
-        .container { max-width: 1200px; margin: 30px auto; padding: 20px; }
+        :root { --dark: #0c2340; --gold: #c5a059; --bg: #f8fafc; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; color: #333; }
         
-        /* تصميم البطاقات */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); }
-        .card img { width: 100%; height: 150px; object-fit: cover; }
-        .card-body { padding: 15px; text-align: center; }
+        /* الهيدر */
+        .header { background: var(--dark); color: white; padding: 25px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .header h2 { margin: 0; font-weight: 300; letter-spacing: 1px; }
+
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         
-        .file-item { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; border-right: 5px solid var(--gold); }
-        .btn-back { background: var(--gold); border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; }
-        
-        /* تواصل مع الخبراء */
-        .expert-card { background: white; padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
-        .expert-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
+        /* مسار التنقل */
+        .breadcrumb { background: var(--white); padding: 15px 25px; border-radius: 10px; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .btn-back { background: var(--gold); border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        .btn-back:hover { background: #b08d4a; }
+
+        /* تنسيق الأقسام (البطاقات) */
+        .grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .category-card { background: var(--white); border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer; border: 1px solid transparent; }
+        .category-card:hover { transform: translateY(-10px); border-color: var(--gold); }
+        .category-img { width: 100%; height: 160px; background: #eee; object-fit: cover; }
+        .category-info { padding: 20px; text-align: center; }
+        .category-info h4 { margin: 0; color: var(--dark); font-size: 1.2rem; }
+
+        /* تنسيق المواد العلمية (قائمة بداخل القسم) */
+        .files-section { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
+        .file-card { background: var(--white); padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-right: 6px solid var(--gold); }
+        .file-info { display: flex; align-items: center; gap: 15px; }
+        .file-info i { color: var(--gold); font-size: 1.5rem; }
+        .btn-download { text-decoration: none; background: var(--dark); color: white; padding: 8px 20px; border-radius: 6px; font-size: 0.9rem; transition: 0.3s; }
+        .btn-download:hover { background: var(--gold); }
+
+        .empty-msg { text-align: center; color: #999; padding: 50px; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <button onclick="window.location.href='index.html'" style="color:var(--gold); background:none; border:none; cursor:pointer;">← الرئيسية</button>
-    <h2>مكتبة نِحرير العلمية</h2>
-    <div></div>
+    <h2>مكتبة نِحرير الرقمية</h2>
+    <button onclick="window.location.href='index.html'" style="color:var(--gold); background:none; border:1px solid var(--gold); padding:8px 15px; border-radius:5px; cursor:pointer;">الخروج للموقع العام</button>
 </div>
 
 <div class="container">
-    <div id="navigationArea">
-        <button class="btn-back" id="backBtn" onclick="goBack()" style="display:none;">العودة للقسم السابق</button>
-        <h3 id="currentPath">الرئيسية</h3>
+    <!-- شريط المسار والعودة -->
+    <div class="breadcrumb">
+        <button class="btn-back" id="backBtn" onclick="goBack()" style="display:none;"><i class="fas fa-arrow-right"></i> عودة</button>
+        <span id="currentPath" style="font-weight: bold; color: var(--dark);">الرئيسية</span>
     </div>
 
-    <!-- منطقة عرض الأقسام والملفات -->
-    <div id="displayGrid" class="grid"></div>
-    <div id="filesList" style="margin-top:20px;"></div>
+    <!-- عرض الأقسام -->
+    <div id="categoriesGrid" class="grid-layout"></div>
 
-    <hr style="margin: 50px 0; opacity: 0.2;">
-    
-    <h3>تواصل مع الخبراء</h3>
-    <div id="expertsDisplay"></div>
+    <!-- عرض الملفات -->
+    <div id="filesList" class="files-section"></div>
 </div>
 
 <script>
@@ -63,75 +73,74 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    let pathStack = ["root"];
+    let history = ["root"]; // لتتبع المسار عند العودة
 
-    // الوظيفة الأساسية لجلب البيانات
-    async function loadContent(parentName) {
-        const grid = document.getElementById('displayGrid');
-        const list = document.getElementById('filesList');
-        grid.innerHTML = 'جاري التحميل...';
-        list.innerHTML = '';
+    async function loadData(parent) {
+        const catGrid = document.getElementById('categoriesGrid');
+        const fileList = document.getElementById('filesList');
+        const pathText = document.getElementById('currentPath');
+        const backBtn = document.getElementById('backBtn');
 
-        document.getElementById('backBtn').style.display = parentName === "root" ? "none" : "block";
-        document.getElementById('currentPath').innerText = parentName === "root" ? "الرئيسية" : "قسم: " + parentName;
-
-        const snap = await db.collection('nihrir_data').where('parent', '==', parentName).get();
+        catGrid.innerHTML = "";
+        fileList.innerHTML = "";
         
-        let gridHTML = '';
-        let listHTML = '';
+        // تحديث العنوان وزر العودة
+        pathText.innerText = parent === "root" ? "المكتبة الرئيسية" : "تصفح: " + parent;
+        backBtn.style.display = parent === "root" ? "none" : "block";
 
-        snap.forEach(doc => {
-            const item = doc.data();
-            if(item.type === 'category') {
-                gridHTML += `
-                    <div class="card" onclick="navigateTo('${item.name}')">
-                        <img src="${item.payload || 'https://via.placeholder.com/300x150?text=Category'}">
-                        <div class="card-body"><h4>${item.name}</h4></div>
-                    </div>`;
-            } else {
-                listHTML += `
-                    <div class="file-item">
-                        <span><i class="fas fa-file-pdf"></i> ${item.name}</span>
-                        <a href="${item.payload}" target="_blank" style="text-decoration:none; color:var(--dark); font-weight:bold;">فتح المادة</a>
-                    </div>`;
+        try {
+            const snap = await db.collection('nihrir_data').where('parent', '==', parent).get();
+            
+            if (snap.empty) {
+                catGrid.innerHTML = `<div class="empty-msg">لا توجد محتويات في هذا القسم حالياً.</div>`;
+                return;
             }
-        });
 
-        grid.innerHTML = gridHTML;
-        list.innerHTML = listHTML;
-        if(!gridHTML && !listHTML) grid.innerHTML = "<p>لا توجد محتويات هنا بعد.</p>";
+            snap.forEach(doc => {
+                const item = doc.data();
+                if (item.type === 'category') {
+                    // تصميم المجلد/القسم
+                    catGrid.innerHTML += `
+                        <div class="category-card" onclick="enterCategory('${item.name}')">
+                            <img src="${item.payload || 'https://via.placeholder.com/400x200?text=Nihrir+Library'}" class="category-img">
+                            <div class="category-info">
+                                <h4>${item.name}</h4>
+                            </div>
+                        </div>`;
+                } else {
+                    // تصميم ملف المادة العلمية
+                    fileList.innerHTML += `
+                        <div class="file-card">
+                            <div class="file-info">
+                                <i class="fas fa-file-medical"></i>
+                                <div>
+                                    <strong style="display:block">${item.name}</strong>
+                                    <small style="color:#888">مادة علمية متاحة</small>
+                                </div>
+                            </div>
+                            <a href="${item.payload}" target="_blank" class="btn-download">مشاهدة / تحميل</a>
+                        </div>`;
+                }
+            });
+        } catch (error) {
+            console.error("Error loading data:", error);
+        }
     }
 
-    function navigateTo(name) {
-        pathStack.push(name);
-        loadContent(name);
+    function enterCategory(name) {
+        history.push(name);
+        loadData(name);
     }
 
     function goBack() {
-        pathStack.pop();
-        loadContent(pathStack[pathStack.length - 1]);
+        if (history.length > 1) {
+            history.pop();
+            loadData(history[history.length - 1]);
+        }
     }
 
-    // جلب الخبراء
-    db.collection('experts').onSnapshot(snap => {
-        let h = '';
-        snap.forEach(doc => {
-            const ex = doc.data();
-            h += `
-                <div class="expert-card">
-                    <img src="${ex.image || 'https://via.placeholder.com/60'}" class="expert-img">
-                    <div>
-                        <h4 style="margin:0">${ex.name}</h4>
-                        <small>${ex.spec}</small><br>
-                        <a href="mailto:${ex.email}" style="font-size:12px; color:var(--gold)">${ex.email}</a>
-                    </div>
-                </div>`;
-        });
-        document.getElementById('expertsDisplay').innerHTML = h;
-    });
-
-    // التشغيل الأول
-    loadContent("root");
+    // التحميل المبدئي
+    loadData("root");
 </script>
 </body>
 </html>
